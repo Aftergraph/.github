@@ -54,10 +54,10 @@ on:
       wiv2_ref:
         required: false
         type: string
-        default: 'master'
-        description: >-
-          Ref for work-intelligence-v2. Default master until its default branch
-          is renamed to main (planned separately; do NOT gate on it yet).
+        default: 'main'
+        description: >
+          Ref for work-intelligence-v2. WIV2 default branch was renamed
+          master->main (2026-09-05).
 
 permissions:
   contents: read
