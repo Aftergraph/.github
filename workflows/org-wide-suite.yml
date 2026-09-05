@@ -1,0 +1,51 @@
+name: Org-wide Polyrepo Suite
+
+# Full org-level integration suite. Runs all five core repos against the
+# materialized polyrepo workspace.
+#
+# Trigger model (aftergraph governance review, 2026-09-05):
+#   - The per-repo local unit/fast CI stays the push-time gate.
+#   - This full org suite runs on schedule / manual / release — NOT on every
+#     single push. That keeps cross-repo verification cheap and meaningful.
+#   - The schedule also protects against drift in the sibling repos: each leg
+#     checks out the siblings' CURRENT default branches, so a breaking change
+#     in a contract shows up here the next morning.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * *" # daily 05:00 UTC = 07:00 CEST
+
+permissions:
+  contents: read
+
+jobs:
+  gate-trust-gateway:
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    with:
+      target_repo: trust-gateway
+      siblings: "after-graph-governance aie works-execution"
+
+  gate-works-execution:
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    with:
+      target_repo: works-execution
+      siblings: "after-graph-governance"
+
+  gate-aie:
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    with:
+      target_repo: aie
+      siblings: "after-graph-governance"
+
+  gate-work-intelligence-v2:
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    with:
+      target_repo: work-intelligence-v2
+      siblings: "after-graph-governance"
+
+  gate-intelligence-systems-research:
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    with:
+      target_repo: intelligence-systems-research
+      siblings: "after-graph-governance"

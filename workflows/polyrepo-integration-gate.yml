@@ -1,0 +1,193 @@
+name: Polyrepo Integration Gate
+
+# Shared cross-repo integration gate for the Aftergraph core.
+#
+# Purpose: materialize the sibling repos + governance contracts that a repo's
+# integration/conformance tests actually require, then run that repo's REAL
+# existing test suite against the materialized workspace.
+#
+# Design rules (aftergraph governance review, 2026-09-05):
+#   - No artifact upload/download. Artifact quota is a known blocker; contracts
+#     are checked out directly into the workspace instead.
+#   - All repos are PUBLIC, so cross-repo checkout works with GITHUB_TOKEN.
+#   - Single job: GITHUB_WORKSPACE is per-job, so the sibling-layout contract
+#     (repos as siblings under the workspace root) only holds inside one job.
+#   - Per-repo test commands are the repos' ACTUAL existing CI commands, not
+#     invented matrix fields. Local unit workflows stay untouched; this gate is
+#     additive.
+#   - WIV2 lint is a real gate: no continue-on-error. Lint findings stay visible.
+#   - Stable job name 'integration' => stable check name for a later required
+#     status. No branch protection is activated until this gate is green.
+#
+# Workspace contract (checked out as siblings under $GITHUB_WORKSPACE):
+#   after-graph-governance/   <- canonical contract source
+#   aie/
+#   trust-gateway/
+#   works-execution/
+#   work-intelligence-v2/
+#   intelligence-systems-research/
+# Env vars exposed to the suite:
+#   AFTERGRAPH_ROOT, GOVERNANCE_ROOT, GOVERNANCE_CONTRACTS_PATH, GOVERNANCE_DIR,
+#   AIE_RUNTIME_PATH, AIE_ROOT, WORKS_ROOT, TG_ROOT, WIV2_ROOT, ISR_ROOT
+
+on:
+  workflow_call:
+    inputs:
+      target_repo:
+        required: true
+        type: string
+        description: Repo whose integration suite runs (e.g. trust-gateway).
+      target_ref:
+        required: false
+        type: string
+        default: 'main'
+        description: Ref of target_repo to test. Default main.
+      siblings:
+        required: false
+        type: string
+        default: ''
+        description: >-
+          Space-separated sibling repos to materialize from the core set:
+          after-graph-governance aie works-execution work-intelligence-v2
+          intelligence-systems-research. Only repos actually needed by the
+          target's integration tests should be listed.
+      wiv2_ref:
+        required: false
+        type: string
+        default: 'master'
+        description: >-
+          Ref for work-intelligence-v2. Default master until its default branch
+          is renamed to main (planned separately; do NOT gate on it yet).
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # ---- Materialize target repo (sibling path, same as everything else) ----
+      - name: Checkout target (${{ inputs.target_repo }})
+        uses: actions/checkout@v4
+        with:
+          repository: Aftergraph/${{ inputs.target_repo }}
+          ref: ${{ inputs.target_ref }}
+          path: ${{ inputs.target_repo }}
+
+      # ---- Materialize governance contracts (canonical source) ----
+      - name: Checkout after-graph-governance
+        if: contains(inputs.siblings, 'after-graph-governance')
+        uses: actions/checkout@v4
+        with:
+          repository: Aftergraph/after-graph-governance
+          ref: main
+          path: after-graph-governance
+
+      - name: Checkout aie
+        if: contains(inputs.siblings, 'aie')
+        uses: actions/checkout@v4
+        with:
+          repository: Aftergraph/aie
+          ref: main
+          path: aie
+
+      - name: Checkout works-execution
+        if: contains(inputs.siblings, 'works-execution')
+        uses: actions/checkout@v4
+        with:
+          repository: Aftergraph/works-execution
+          ref: main
+          path: works-execution
+
+      - name: Checkout work-intelligence-v2
+        if: contains(inputs.siblings, 'work-intelligence-v2')
+        uses: actions/checkout@v4
+        with:
+          repository: Aftergraph/work-intelligence-v2
+          ref: ${{ inputs.wiv2_ref }}
+          path: work-intelligence-v2
+
+      - name: Checkout intelligence-systems-research
+        if: contains(inputs.siblings, 'intelligence-systems-research')
+        uses: actions/checkout@v4
+        with:
+          repository: Aftergraph/intelligence-systems-research
+          ref: main
+          path: intelligence-systems-research
+
+      # ---- Workspace contract env vars ----
+      - name: Set workspace contract env
+        run: |
+          echo "AFTERGRAPH_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          echo "GOVERNANCE_ROOT=$GITHUB_WORKSPACE/after-graph-governance" >> "$GITHUB_ENV"
+          echo "GOVERNANCE_CONTRACTS_PATH=$GITHUB_WORKSPACE/after-graph-governance/docs/contracts/frozen" >> "$GITHUB_ENV"
+          echo "GOVERNANCE_DIR=$GITHUB_WORKSPACE/after-graph-governance" >> "$GITHUB_ENV"
+          echo "AIE_RUNTIME_PATH=$GITHUB_WORKSPACE/aie" >> "$GITHUB_ENV"
+          echo "AIE_ROOT=$GITHUB_WORKSPACE/aie" >> "$GITHUB_ENV"
+          echo "WORKS_ROOT=$GITHUB_WORKSPACE/works-execution" >> "$GITHUB_ENV"
+          echo "TG_ROOT=$GITHUB_WORKSPACE/trust-gateway" >> "$GITHUB_ENV"
+          echo "WIV2_ROOT=$GITHUB_WORKSPACE/work-intelligence-v2" >> "$GITHUB_ENV"
+          echo "ISR_ROOT=$GITHUB_WORKSPACE/intelligence-systems-research" >> "$GITHUB_ENV"
+
+      # ---- Assert contracts are deterministically present ----
+      # Fail loudly if the exact schemas the suites resolve are missing.
+      # This is what converts "missing sibling repo" into a real signal.
+      - name: Assert governance contracts present
+        run: |
+          set -euo pipefail
+          test -d "$GOVERNANCE_ROOT"
+          test -f "$GOVERNANCE_CONTRACTS_PATH/policy.token.schema.json"
+          test -f "$GOVERNANCE_CONTRACTS_PATH/identity.schema.json"
+          test -f "$GOVERNANCE_CONTRACTS_PATH/evidence.schema.schema.json"
+          test -f "$GOVERNANCE_CONTRACTS_PATH/kernel.budget.schema.json"
+          test -f "$GOVERNANCE_ROOT/docs/contracts/mission-state/1.0.json"
+          echo "PASS: governance contracts materialized at $GOVERNANCE_CONTRACTS_PATH"
+
+      # ---- Run the target's real existing suite against the workspace ----
+      - name: Run integration suite (${{ inputs.target_repo }})
+        shell: bash
+        env:
+          TARGET_REPO: ${{ inputs.target_repo }}
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/$TARGET_REPO"
+          case "$TARGET_REPO" in
+            trust-gateway)
+              # Real TG command: node --test tests/*.test.js (node 24)
+              npm test
+              ;;
+            aie)
+              # Real AIE command (ci.yml): pip install -e '.[dev,otel]' + pytest
+              python -m pip install --upgrade pip
+              python -m pip install -e '.[dev,otel]'
+              python -m compileall -q src interop/s1
+              pytest -q
+              ;;
+            work-intelligence-v2)
+              # Real WIV2 command (ci.yml): ruff check then pytest. Lint is a hard gate.
+              python -m pip install --upgrade pip
+              pip install -e ".[dev]"
+              pip install ruff
+              ruff check src/ tests/
+              pytest --tb=short -q
+              ;;
+            works-execution)
+              # Real WORKS command (ci.yml): go build + vet + test
+              go build ./...
+              go vet ./...
+              go test ./... -count=1
+              ;;
+            intelligence-systems-research)
+              # Real ISR intent (ci.yml python-tests): pytest. ISR has NO
+              # requirements files, so bootstrap is explicit and deterministic.
+              python -m pip install --upgrade pip
+              pip install pytest httpx
+              python -m pytest -v --tb=short
+              ;;
+            *)
+              echo "Unknown target_repo: $TARGET_REPO" >&2
+              exit 1
+              ;;
+          esac
