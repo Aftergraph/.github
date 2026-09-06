@@ -1,18 +1,29 @@
 name: Brand Assets
 on:
   pull_request:
-    paths: ["brand/**","profile/**","scripts/verify_brand_assets.py",".github/workflows/brand-assets.yml"]
+    paths: ["brand/**", "profile/**", "scripts/verify_brand_assets.py", "scripts/test_verify_brand_assets.py", ".github/workflows/brand-assets.yml"]
   push:
     branches: [main]
-    paths: ["brand/**","profile/**","scripts/verify_brand_assets.py"]
+    paths: ["brand/**", "profile/**", "scripts/verify_brand_assets.py", "scripts/test_verify_brand_assets.py"]
 permissions:
   contents: read
 jobs:
-  verify:
+  verify-brand-assets:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install pillow
-      - run: python scripts/verify_brand_assets.py
+      - run: python scripts/test_verify_brand_assets.py
+      - name: Validate brand JSON
+        run: |
+          python -c "import json; json.load(open('brand/manifest.json')); json.load(open('brand/registry.json')); json.load(open('brand/tokens.json')); print('brand JSON OK')"
+      - name: Validate SVG masters
+        run: |
+          python -c "
+          from xml.etree import ElementTree as ET
+          from pathlib import Path
+          for p in Path('brand').rglob('*.svg'):
+              ET.parse(p)
+          print('all brand SVGs parse OK')
+          "
