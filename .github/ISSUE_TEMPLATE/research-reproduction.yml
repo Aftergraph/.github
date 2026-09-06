@@ -1,0 +1,70 @@
+name: Research reproduction / contradiction
+description: Report an independent replication, failed replication, contradictory prior art, or evidence challenge
+title: "[research] "
+labels: ["research"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Aftergraph welcomes failed replications and contradictory evidence. Please identify the exact claim and evidence class you are testing.
+  - type: input
+    id: claim
+    attributes:
+      label: Claim, study, paper, or conformance vector
+      placeholder: C-00X, STUDY-00X, SPEC-001 invariant, paper title, or test vector
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Exact repository revision tested
+      placeholder: commit SHA or release
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Evidence class
+      options:
+        - Deterministic / sandbox testbed
+        - Simulation / cognitive model
+        - Live-provider methodological pilot
+        - Live confirmatory run
+        - Conformance result
+        - Independent external reproduction
+        - Prior art / literature / patent / source-code contradiction
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Reproduced
+        - Partially reproduced
+        - Failed to reproduce
+        - Contradicted
+        - Inconclusive
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: Method and environment
+      description: Hardware, software, model/provider/version, parameters, seeds, dataset/workload versions, and exact commands.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Results and raw evidence location
+      description: Include summary metrics plus links or hashes for raw artifacts where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: interpretation
+    attributes:
+      label: Interpretation
+      description: Explain what the evidence supports and what it does not support.
+    validations:
+      required: true
