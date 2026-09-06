@@ -1,0 +1,21 @@
+name: Auto-merge Dependabot (reusable)
+on:
+  workflow_call:
+    secrets:
+      automerge_pat:
+        required: true
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == dependabot[bot] && contains(github.event.pull_request.labels.*.name, auto-merge)
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.automerge_pat }}
+      - uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.automerge_pat }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
