@@ -20,7 +20,7 @@ from pathlib import Path
 
 SHA_RE = re.compile(r"^[a-f0-9]{40}$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+$")
-REQUIRED_TOP = {"$id", "title", "description", "captured_at", "owner", "branch", "repositories"}
+REQUIRED_TOP = {"$id", "title", "description", "captured_at", "owner", "branch", "manifest_repository", "manifest_sha_policy", "repositories"}
 
 
 def validate(doc):
@@ -37,6 +37,10 @@ def validate(doc):
         errors.append("$id must be contract:polyrepo-heads/1.0")
     if doc["owner"] != "Aftergraph":
         errors.append("owner must be Aftergraph")
+    if doc["manifest_repository"] != "Aftergraph/.github":
+        errors.append("manifest_repository must be Aftergraph/.github")
+    if not doc["manifest_sha_policy"].startswith("self-excluded:"):
+        errors.append("manifest_sha_policy must declare self-excluded policy")
     if doc["branch"] != "main":
         errors.append("branch must be main")
     try:

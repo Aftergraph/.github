@@ -2,16 +2,12 @@
   "$id": "contract:polyrepo-heads/1.0",
   "title": "Aftergraph Polyrepo Exact-Head Manifest",
   "description": "Pinned main heads and cross-repository dependency refs used by selective gates. This is a timestamped snapshot, not a claim that remote main remains unchanged after capture.",
-  "captured_at": "2026-09-06T11:51:52Z",
+  "captured_at": "2026-09-06T11:55:57Z",
   "owner": "Aftergraph",
   "branch": "main",
+  "manifest_repository": "Aftergraph/.github",
+  "manifest_sha_policy": "self-excluded: a commit containing this manifest necessarily changes the manifest repository SHA",
   "repositories": [
-    {
-      "repo": "Aftergraph/.github",
-      "role": "org-control-plane",
-      "sha": "93c176afb57121016116fc9bb6b7126bb22a858d",
-      "dependencies": []
-    },
     {
       "repo": "Aftergraph/trust-gateway",
       "role": "security-enforcement",
@@ -46,7 +42,7 @@
     {
       "repo": "Aftergraph/work-intelligence-v2",
       "role": "operational-intelligence",
-      "sha": "5018c9bc244dac1608bc1849ebe42ec5f860617b",
+      "sha": "1a3901ae4b9c5e9f071f5d775ba4cb86f905bf3d",
       "dependencies": []
     },
     {
