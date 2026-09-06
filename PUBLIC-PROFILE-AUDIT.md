@@ -94,3 +94,23 @@ These are tracked in issue #6.
 `Research → Institution Semantics → Enforcement → Execution → Intelligence → Governance`
 
 This ordering should remain stable unless the actual architecture changes. Random pin rotation because a repository had an exciting Tuesday is not information architecture.
+
+## Addendum — settings completion 2026-09-06/07
+
+All admin items from this audit are closed except pinned repositories:
+
+- canonical topics + descriptions on all 8 repos — done, verified by readback;
+- stale `after-graph-governance` homepage cleared;
+- Discussions enabled on `aie` + `intelligence-systems-research`;
+- private vulnerability reporting on all 8 public repos;
+- secret scanning + push protection on all 8;
+- Dependabot alerts + automated security fixes on all 8;
+- branch protection (1 review) on all 8; strict checks kept/extended where CI exists;
+- org-wide CODEOWNERS, Dependabot configs (majors ignored), Scorecard, CodeQL, Release Drafter, README badges;
+- auto-merge bot (cron, PAT-free) for labeled dependabot minor/patch PRs;
+- Apache-2.0 on 6 repos (verbatim from `aie`); governance keeps custom terms;
+- org name set; website deliberately empty.
+
+Still open: pinned-repos order (no GitHub API exists — manual UI only, owner-parked).
+Out of scope for settings (owned elsewhere): CodeQL backlog triage, brand asset gap,
+Dependabot-major triage, ISR STUDY-011 amendment-or-revert (main red at audit close).
