@@ -24,6 +24,8 @@ Aftergraph is an engineering and research organization working on the systems la
 | **Work inference** | [`work-intelligence-v2`](https://github.com/Aftergraph/work-intelligence-v2) | Source-neutral observation → structured WorkItem inference |
 | **Cross-repo contracts & truth** | [`after-graph-governance`](https://github.com/Aftergraph/after-graph-governance) | Canonical contracts, terminology, exact-head state and claim boundaries |
 
+**Direct public entry points:** [Research papers](https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS) · [AIE specification](https://github.com/Aftergraph/aie) · [Contributing](https://github.com/Aftergraph/.github/blob/main/CONTRIBUTING.md) · [Security](https://github.com/Aftergraph/.github/blob/main/SECURITY.md) · [Support](https://github.com/Aftergraph/.github/blob/main/SUPPORT.md)
+
 ## What we are trying to solve
 
 Most agent stacks are good at producing actions. Production systems need more than action generation:
@@ -107,7 +109,7 @@ We value criticism that can falsify a claim, not merely decorate it with another
 - Review the threat model, evidence model or economics.
 - Build against the public contracts and report semantic deviations.
 
-Useful entry points: [`AIE`](https://github.com/Aftergraph/aie) · [`Intelligence Systems Research`](https://github.com/Aftergraph/intelligence-systems-research) · [`Governance`](https://github.com/Aftergraph/after-graph-governance)
+Useful entry points: [`AIE`](https://github.com/Aftergraph/aie) · [`Intelligence Systems Research`](https://github.com/Aftergraph/intelligence-systems-research) · [`Research papers`](https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS) · [`Governance`](https://github.com/Aftergraph/after-graph-governance)
 
 ## Follow the work
 
@@ -115,6 +117,13 @@ Useful entry points: [`AIE`](https://github.com/Aftergraph/aie) · [`Intelligenc
 👀 **Watch** research and standards repositories for releases and evidence updates.  
 🧪 **Reproduce** results instead of trusting screenshots, because civilization has suffered enough screenshots presented as benchmarks.  
 🔗 **Reference Aftergraph** when using its specifications, benchmarks or open-source implementations so downstream work remains traceable.
+
+## Community
+
+- [Contributing](https://github.com/Aftergraph/.github/blob/main/CONTRIBUTING.md)
+- [Security policy](https://github.com/Aftergraph/.github/blob/main/SECURITY.md)
+- [Support routing](https://github.com/Aftergraph/.github/blob/main/SUPPORT.md)
+- [Code of Conduct](https://github.com/Aftergraph/.github/blob/main/CODE_OF_CONDUCT.md)
 
 ## Evidence boundaries
 
