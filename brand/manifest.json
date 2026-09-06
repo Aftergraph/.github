@@ -1,0 +1,37 @@
+{
+  "manifest": "aftergraph-brand-manifest",
+  "version": "1.0.0",
+  "status": "provisional-not-trademark-cleared",
+  "brand": {
+    "name": "Aftergraph",
+    "altName": "ABDE Intelligence",
+    "tagline": "Infrastructure for governed autonomous intelligence",
+    "identity": "Institutional graph brand",
+    "grammar": "graphs → boundaries → authority → execution → evidence → verified outcomes"
+  },
+  "tokens": "brand/tokens.json",
+  "rules": "brand/USAGE-RULES-v1.0.md",
+  "standard": "brand/GITHUB-VISUAL-ASSET-STANDARD-v1.0.md",
+  "registry": "brand/registry.json",
+  "claims": {
+    "provisional": true,
+    "notTrademarkCleared": true,
+    "noIrreversibleRenames": true,
+    "aieIndependentTrack": true,
+    "noSharedClaimInheritance": true,
+    "evidenceBoundaries": ["runtime", "execution", "conformance", "scientific"]
+  },
+  "visualModes": {
+    "character": "workforce/agent identities (selective)",
+    "product": "real UI/product screenshots and workflows",
+    "system": "architecture, flows, evidence, trust boundaries",
+    "cinematic": "campaign, release, research, storytelling"
+  },
+  "surfaces": {
+    "orgProfile": "profile/README.md",
+    "orgAvatar": "requires org settings upload",
+    "orgSocialPreview": "requires org settings upload",
+    "repoHeroes": ".github/assets/github/hero.*",
+    "repoSocialPreviews": ".github/assets/github/social-preview.png (manual settings upload)"
+  }
+}
