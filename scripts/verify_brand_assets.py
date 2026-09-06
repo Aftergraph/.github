@@ -109,11 +109,11 @@ if reg.exists():
 if readme.exists():
     txt = readme.read_text(encoding="utf-8")
     for m in re.finditer(r'(?:srcset|src)="([^"]+\.(?:webp|png|svg|gif))"', txt):
-        ref = m.group(1).split("?")[0].split("#")[0].lstrip("./")
+        ref = m.group(1).split("?")[0].split("#")[0].removeprefix("./")
         if not (ROOT / ref).exists():
             errors.append(f"README broken image ref: {ref}")
     for m in re.finditer(r'!\[[^\]]*\]\(([^)]+\.(?:webp|png|svg|gif))\)', txt):
-        ref = m.group(1).split("?")[0].split("#")[0].lstrip("./")
+        ref = m.group(1).split("?")[0].split("#")[0].removeprefix("./")
         if not (ROOT / ref).exists():
             errors.append(f"README broken markdown img ref: {ref}")
 
