@@ -1,9 +1,12 @@
 # Aftergraph Polyrepo Exact-Head Manifest
 
 `polyrepo-heads.json` is the bounded snapshot used by cross-repository gates.
-Every repository entry binds a named role to one full `main` commit SHA. A
-consumer must compare the snapshot to the exact tree it is about to test; a
-mismatch is `STALE`, not an approximation of the current state.
+Every external repository entry binds a named role to one full `main` commit
+SHA. The manifest repository (`Aftergraph/.github`) is declared separately and
+intentionally self-excluded: merging a commit that contains the manifest
+necessarily changes that repository's own SHA, so a self-entry can never be a
+stable exact-head assertion. A mismatch is `STALE`, not an approximation of the
+current state.
 
 The AIE dependency edge is explicit: its self-hosted workflow checks out
 `Aftergraph/after-graph-governance` at the pinned SHA under

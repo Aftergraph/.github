@@ -28,7 +28,7 @@ class ManifestTest(unittest.TestCase):
     def test_current_manifest_is_valid(self):
         result = run(load())
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("7 repositories", result.stdout)
+        self.assertIn("6 repositories", result.stdout)
 
     def test_schema_id_required(self):
         doc = load()
@@ -67,20 +67,20 @@ class ManifestTest(unittest.TestCase):
 
     def test_dependency_requires_full_sha(self):
         doc = load()
-        doc["repositories"][3]["dependencies"][0]["sha"] = "1deb274"
+        doc["repositories"][2]["dependencies"][0]["sha"] = "1deb274"
         result = run(doc)
         self.assertEqual(result.returncode, 1)
         self.assertIn("dependencies[0].sha", result.stdout)
 
     def test_dependency_path_must_be_relative(self):
         doc = load()
-        doc["repositories"][3]["dependencies"][0]["path"] = "/absolute"
+        doc["repositories"][2]["dependencies"][0]["path"] = "/absolute"
         result = run(doc)
         self.assertEqual(result.returncode, 1)
         self.assertIn("non-absolute", result.stdout)
 
     def test_expected_head_match(self):
-        sha = load()["repositories"][3]["sha"]
+        sha = load()["repositories"][2]["sha"]
         result = run(load(), "--head", f"Aftergraph/aie={sha}")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
@@ -98,6 +98,12 @@ class ManifestTest(unittest.TestCase):
         result = run(load(), "--head", "Aftergraph/aie=short")
         self.assertEqual(result.returncode, 1)
         self.assertIn("invalid", result.stdout)
+
+    def test_manifest_repository_is_explicitly_self_excluded(self):
+        doc = load()
+        self.assertEqual(doc["manifest_repository"], "Aftergraph/.github")
+        self.assertTrue(doc["manifest_sha_policy"].startswith("self-excluded:"))
+        self.assertNotIn("Aftergraph/.github", {r["repo"] for r in doc["repositories"]})
 
     def test_dependency_edges_are_present(self):
         doc = load()
