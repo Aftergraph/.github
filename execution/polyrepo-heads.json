@@ -2,14 +2,14 @@
   "$id": "contract:polyrepo-heads/1.0",
   "title": "Aftergraph Polyrepo Exact-Head Manifest",
   "description": "Pinned main heads and cross-repository dependency refs used by selective gates. This is a timestamped snapshot, not a claim that remote main remains unchanged after capture.",
-  "captured_at": "2026-09-06T11:46:46Z",
+  "captured_at": "2026-09-06T11:51:52Z",
   "owner": "Aftergraph",
   "branch": "main",
   "repositories": [
     {
       "repo": "Aftergraph/.github",
       "role": "org-control-plane",
-      "sha": "bda07990bb30e76b4830c55ff779d54ac084156d",
+      "sha": "93c176afb57121016116fc9bb6b7126bb22a858d",
       "dependencies": []
     },
     {
