@@ -1,0 +1,70 @@
+name: Bug report
+description: Report reproducible incorrect behavior in an Aftergraph repository
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a reproducible defect. Please do not include secrets, private data, or unreleased vulnerability details here.
+  - type: input
+    id: repo
+    attributes:
+      label: Affected repository
+      placeholder: Aftergraph/trust-gateway
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Exact commit or release
+      placeholder: commit SHA, tag, or release
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Commands, input, config, and smallest sequence that reproduces the issue.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, runtime, language/tool versions, relevant provider/model versions.
+    validations:
+      required: true
+  - type: dropdown
+    id: boundary
+    attributes:
+      label: Does this affect a safety or authority boundary?
+      options:
+        - "No / unknown"
+        - "Authority or permissions"
+        - "Revocation / approval / kill switch"
+        - "Budget / quota / rate limit"
+        - "Evidence / verification integrity"
+        - "Tenant or secret isolation"
+    validations:
+      required: true
+  - type: checkboxes
+    id: hygiene
+    attributes:
+      label: Public-report hygiene
+      options:
+        - label: I removed secrets, private data, and exploit details that belong in a private security report.
+          required: true
