@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Aftergraph/.github/blob/main/SECURITY.md
+    about: Please use the private security path described here instead of publishing exploit details.
+  - name: Research papers and reproduction
+    url: https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS
+    about: Read the current paper index and evidence boundaries before opening a research challenge.
+  - name: Agentic Institution Engineering
+    url: https://github.com/Aftergraph/aie
+    about: AIE specification, conformance, interoperability and authority/delegation work.
+  - name: Organization support routing
+    url: https://github.com/Aftergraph/.github/blob/main/SUPPORT.md
+    about: Find the repository that owns the behavior or claim you need help with.
