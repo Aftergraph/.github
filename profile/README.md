@@ -12,6 +12,8 @@
 Aftergraph is an engineering and research organization working on the systems layer around autonomous AI: how long-running agents can execute real work while preserving bounded authority, durable state, measurable cost, machine-verifiable evidence, and independently verified outcomes.
 
 > **Intelligence that can act. Systems that can prove why.**
+>
+> 📡 **Public Knowledge Plane live:** [docs.aftergraph.org](https://docs.aftergraph.org) — architecture, contracts, claims with evidence strength, API reference, and agent-readable context packs, all provenance-stamped to exact source commits.
 
 ## Start here
 
@@ -89,6 +91,7 @@ Aftergraph intentionally composes existing standards and protocols where they al
 
 | Repository | Role |
 |---|---|
+| [`Aftergraph/docs`](https://github.com/Aftergraph/docs) | **Knowledge Plane** — public docs/research portal with provenance, freshness and machine-readable surfaces · live at [docs.aftergraph.org](https://docs.aftergraph.org) |
 | [`Aftergraph/aie`](https://github.com/Aftergraph/aie) | Agentic Institution Engineering specification, conformance and interoperability |
 | [`Aftergraph/intelligence-systems-research`](https://github.com/Aftergraph/intelligence-systems-research) | Research program, benchmark, papers, experiments and reference runtime |
 | [`Aftergraph/after-graph-governance`](https://github.com/Aftergraph/after-graph-governance) | Cross-repository governance and canonical contracts |
