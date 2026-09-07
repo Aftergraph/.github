@@ -114,3 +114,13 @@ All admin items from this audit are closed except pinned repositories:
 Still open: pinned-repos order (no GitHub API exists — manual UI only, owner-parked).
 Out of scope for settings (owned elsewhere): CodeQL backlog triage, brand asset gap,
 Dependabot-major triage, ISR STUDY-011 amendment-or-revert (main red at audit close).
+
+## Addendum 2 — native merge queue 2026-09-07
+
+Repo-level rulesets (active) with merge_queue rule on all 8 public repos
+(SQUASH, max_entries_to_merge 1, max_entries_to_build 1, ALLGREEN):
+studio 22410018, works-execution 22410181, after-graph-governance 22410245,
+brand 22410284, ISR 22410215, aie 22410288, trust-gateway 22410309, WI2 22410575.
+Pilot proof: studio PR #10 merged via queue (d3055a8). Branch protections
+untouched. dependabot-automerge cron is queue-only. Org-level rulesets remain
+unavailable (Team plan required); repo-level rulesets are free for public repos.
