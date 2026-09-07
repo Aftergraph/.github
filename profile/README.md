@@ -91,6 +91,7 @@ Aftergraph intentionally composes existing standards and protocols where they al
 
 | Repository | Role |
 |---|---|
+| [`Aftergraph/aftergraph.org`](https://github.com/Aftergraph/aftergraph.org) | Public platform surface — landing, system launcher, health and agent index (aftergraph.org) |
 | [`Aftergraph/docs`](https://github.com/Aftergraph/docs) | **Knowledge Plane** — public docs/research portal with provenance, freshness and machine-readable surfaces · live at [docs.aftergraph.org](https://docs.aftergraph.org) |
 | [`Aftergraph/aie`](https://github.com/Aftergraph/aie) | Agentic Institution Engineering specification, conformance and interoperability |
 | [`Aftergraph/intelligence-systems-research`](https://github.com/Aftergraph/intelligence-systems-research) | Research program, benchmark, papers, experiments and reference runtime |
