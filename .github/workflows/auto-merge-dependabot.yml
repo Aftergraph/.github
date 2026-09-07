@@ -3,18 +3,35 @@ on:
   workflow_call:
     secrets:
       automerge_pat:
-        required: true
+        required: false
 jobs:
   auto-merge:
-    if: github.event.pull_request.user.login == dependabot[bot] && contains(github.event.pull_request.labels.*.name, auto-merge)
+    # ponytail: guard-step instead of hard secret requirement — every consuming
+    # repo's PR runs failed at secret resolution while AUTOMERGE_PAT was unset.
+    # Ceiling: silently no-ops (with a visible warning) until the PAT is
+    # configured; upgrade path is adding the org secret, no workflow change.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'auto-merge')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-      - uses: hmarr/auto-approve-action@v4
+      - name: Guard — require AUTOMERGE_PAT
+        id: guard
+        env:
+          PAT_PRESENT: ${{ secrets.automerge_pat != '' }}
+        run: |
+          if [ "$PAT_PRESENT" != "true" ]; then
+            echo "::warning::AUTOMERGE_PAT is not configured — dependabot auto-approve/auto-merge skipped. Set the org/repo secret to enable."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.guard.outputs.skip != 'true'
+        uses: hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363 # v4.0.0
         with:
           github-token: ${{ secrets.automerge_pat }}
-      - uses: peter-evans/enable-pull-request-automerge@v3
+      - if: steps.guard.outputs.skip != 'true'
+        uses: peter-evans/enable-pull-request-automerge@a660677d5469627102a1c1e11409dd063606628d # v3
         with:
           token: ${{ secrets.automerge_pat }}
           pull-request-number: ${{ github.event.pull_request.number }}
