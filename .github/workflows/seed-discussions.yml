@@ -1,0 +1,113 @@
+name: Seed Aftergraph discussions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/seed-discussions.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  discussions: write
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      OWNER: Aftergraph
+      REPO: .github
+    steps:
+      - name: Resolve repository and discussion categories
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          query='query($owner:String!,$name:String!){repository(owner:$owner,name:$name){id discussionCategories(first:100){nodes{id name slug}} discussions(first:100){nodes{title url}}}}'
+          gh api graphql -f query="$query" -F owner="$OWNER" -F name="$REPO" > /tmp/discussions.json
+          repo_id=$(jq -r '.data.repository.id' /tmp/discussions.json)
+          general_id=$(jq -r '.data.repository.discussionCategories.nodes[] | select(.slug=="general") | .id' /tmp/discussions.json | head -n1)
+          ideas_id=$(jq -r '.data.repository.discussionCategories.nodes[] | select(.slug=="ideas") | .id' /tmp/discussions.json | head -n1)
+          test -n "$repo_id" && test "$repo_id" != "null"
+          test -n "$general_id" && test "$general_id" != "null"
+          test -n "$ideas_id" && test "$ideas_id" != "null"
+          echo "repo_id=$repo_id" >> "$GITHUB_OUTPUT"
+          echo "general_id=$general_id" >> "$GITHUB_OUTPUT"
+          echo "ideas_id=$ideas_id" >> "$GITHUB_OUTPUT"
+
+      - name: Seed canonical discussions idempotently
+        shell: bash
+        env:
+          REPO_ID: ${{ steps.resolve.outputs.repo_id }}
+          GENERAL_ID: ${{ steps.resolve.outputs.general_id }}
+          IDEAS_ID: ${{ steps.resolve.outputs.ideas_id }}
+        run: |
+          set -euo pipefail
+          create_discussion() {
+            local category_id="$1" title="$2" body="$3"
+            exists=$(jq --arg title "$title" '[.data.repository.discussions.nodes[] | select(.title==$title)] | length' /tmp/discussions.json)
+            if [ "$exists" -gt 0 ]; then
+              echo "Already exists: $title"
+              return 0
+            fi
+            mutation='mutation($repositoryId:ID!,$categoryId:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repositoryId,categoryId:$categoryId,title:$title,body:$body}){discussion{id url title}}}'
+            gh api graphql -f query="$mutation" -F repositoryId="$REPO_ID" -F categoryId="$category_id" -f title="$title" -f body="$body"
+          }
+
+          welcome=$(cat <<'EOF'
+Welcome to Aftergraph Discussions.
+
+Aftergraph works on infrastructure and open research for verifiable intelligent systems: missions, bounded authority, durable execution, evidence, verification, and agentic institution semantics.
+
+Use Discussions for questions, critique, reproduction reports, early RFC formation, and ideas that are not yet implementation-ready. Move concrete work into Issues and pull requests. Canonical claims, specifications, and evidence remain in the owning repository and exact source commit.
+
+Start here:
+- Organization profile: https://github.com/Aftergraph/.github
+- Docs: https://docs.aftergraph.org
+- Intelligence Systems Research: https://github.com/Aftergraph/intelligence-systems-research
+- AIE: https://github.com/Aftergraph/aie
+- Governance: https://github.com/Aftergraph/after-graph-governance
+
+Contradictory evidence is welcome. A screenshot is not a benchmark, an agent saying "done" is not verification, and a discussion is not a standard.
+EOF
+)
+
+          after_graph=$(cat <<'EOF'
+Aftergraph's current research framing treats Prompt -> Context -> Loop -> Graph as an increasing control surface, not a literal historical sequence. The open research question is what becomes first-class once dynamic agent graphs must also preserve authority, budgets, revocation, evidence, and governed topology change.
+
+One candidate is Agentic Institution Engineering: portable semantics for principals, roles, authority leases, delegation, mission contracts, budgets, lifecycle, topology policy, and evidence above runtime-control mechanisms.
+
+This thread is intentionally adversarial. Useful responses include:
+- prior art that materially overlaps the proposed abstraction,
+- cases where graph/runtime/control-plane engineering is already sufficient,
+- missing invariants or impossible portability assumptions,
+- implementation experience across heterogeneous runtimes,
+- evidence that the proposed layer adds more complexity than verified value.
+
+Please distinguish observed facts, external evidence, synthesis, and speculation. Links to exact papers, standards, code, commits, patents, and reproducible behavior are especially useful.
+EOF
+)
+
+          spec001=$(cat <<'EOF'
+Aftergraph is looking for independent implementations and hostile evaluations of SPEC-001 / the Mission Contract research direction.
+
+The core question is whether a lightweight, vendor-neutral contract can bind mission intent, state, capabilities, attenuated authority, budgets, trajectory, evidence, and independent verification without unacceptable control-plane tax or framework lock-in.
+
+Useful contributions:
+- implement the contract in a different runtime or language,
+- run conformance vectors and report semantic deviations,
+- reproduce or contradict MISSION-Bench results,
+- attack Complete != Verified, evidence gating, authority attenuation, budget enforcement, or trajectory traceability,
+- measure token/context/latency/compute/human overhead,
+- identify materially equivalent prior art.
+
+When reporting results, include exact source commit/release, environment, model/provider/version where relevant, method, raw artifacts, and limitations. Zero observed failures in a sample is not proof of zero population failure probability.
+
+Research repository: https://github.com/Aftergraph/intelligence-systems-research
+EOF
+)
+
+          create_discussion "$GENERAL_ID" "Welcome to Aftergraph" "$welcome"
+          create_discussion "$IDEAS_ID" "What comes after Graph Engineering?" "$after_graph"
+          create_discussion "$GENERAL_ID" "SPEC-001 Mission Contract: Request for Implementations" "$spec001"
