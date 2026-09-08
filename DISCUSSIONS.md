@@ -32,6 +32,8 @@ Structured YAML forms for additional research-specific categories are committed 
 - Prior Art Challenge: https://github.com/orgs/Aftergraph/discussions/13
 - Architecture RFC: https://github.com/orgs/Aftergraph/discussions/14
 - Sentinel SHIP-verdict requirements: https://github.com/orgs/Aftergraph/discussions/15
+- Public Roadmap: https://github.com/orgs/Aftergraph/discussions/16
+- RFC Intake: https://github.com/orgs/Aftergraph/discussions/17
 
 ## Routing
 
