@@ -116,7 +116,7 @@ We value criticism that can falsify a claim, not merely decorate it with another
 - Build against the public contracts and report semantic deviations.
 - Start an `[RFC]` discussion before a cross-repository or normative change becomes implementation work.
 
-Useful entry points: [`Discussions`](https://github.com/orgs/Aftergraph/discussions) · [`MISSION-Bench registry`](https://github.com/orgs/Aftergraph/discussions/12) · [`Prior-art challenge`](https://github.com/orgs/Aftergraph/discussions/13) · [`Architecture RFC`](https://github.com/orgs/Aftergraph/discussions/14) · [`Sentinel verdict`](https://github.com/orgs/Aftergraph/discussions/15)
+Useful entry points: [`Discussions`](https://github.com/orgs/Aftergraph/discussions) · [`MISSION-Bench registry`](https://github.com/orgs/Aftergraph/discussions/12) · [`Prior-art challenge`](https://github.com/orgs/Aftergraph/discussions/13) · [`Architecture RFC`](https://github.com/orgs/Aftergraph/discussions/14) · [`Sentinel verdict`](https://github.com/orgs/Aftergraph/discussions/15) · [`Roadmap thread`](https://github.com/orgs/Aftergraph/discussions/16) · [`RFC intake`](https://github.com/orgs/Aftergraph/discussions/17)
 
 ## Public roadmap
 
@@ -135,6 +135,12 @@ Read the live coordination document: [`PUBLIC-ROADMAP.md`](https://github.com/Af
 ## Community
 
 - [Organization Discussions](https://github.com/orgs/Aftergraph/discussions)
+- [MISSION-Bench registry](https://github.com/orgs/Aftergraph/discussions/12)
+- [Prior-art challenge](https://github.com/orgs/Aftergraph/discussions/13)
+- [Architecture RFC](https://github.com/orgs/Aftergraph/discussions/14)
+- [Sentinel verdict discussion](https://github.com/orgs/Aftergraph/discussions/15)
+- [Public roadmap discussion](https://github.com/orgs/Aftergraph/discussions/16)
+- [RFC intake discussion](https://github.com/orgs/Aftergraph/discussions/17)
 - [Discussion routing](https://github.com/Aftergraph/.github/blob/main/DISCUSSIONS.md)
 - [Public roadmap](https://github.com/Aftergraph/.github/blob/main/PUBLIC-ROADMAP.md)
 - [RFC process](https://github.com/Aftergraph/.github/blob/main/RFC-PROCESS.md)
