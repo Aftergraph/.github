@@ -1,0 +1,41 @@
+title: "[Idea] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome before implementation scope is frozen. Separate evidence from speculation so useful ideas do not accidentally become folklore.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What user, research, systems, or operational problem exists?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed direction
+      description: Describe the smallest useful version first.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and signals
+      description: What facts, user evidence, prior art, experiments, or market signals support this idea?
+    validations:
+      required: false
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Tradeoffs and failure modes
+      description: What gets worse, more complex, slower, or less portable if we do this?
+    validations:
+      required: true
+  - type: checkboxes
+    id: honesty
+    attributes:
+      label: Claim boundary
+      options:
+        - label: I have not presented speculation as an established Aftergraph claim.
+          required: true

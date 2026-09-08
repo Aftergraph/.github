@@ -1,0 +1,35 @@
+title: "[Help/Integration] "
+body:
+  - type: textarea
+    id: integration
+    attributes:
+      label: Integration or component
+      description: Repository, runtime, MCP/A2A integration, SDK, deployment, or external system involved.
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to achieve?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Versions, operating system, runtime, deployment target, and relevant configuration. Never include secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Include the smallest useful logs, errors, traces, or screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+    validations:
+      required: false

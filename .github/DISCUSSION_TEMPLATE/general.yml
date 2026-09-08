@@ -1,0 +1,34 @@
+title: "[General] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use General for organization-wide conversations that do not yet belong in an issue, RFC, or research reproduction thread.
+  - type: textarea
+    id: topic
+    attributes:
+      label: Topic
+      description: What do you want to discuss?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Relevant repositories, docs, specs, links, or prior discussion.
+    validations:
+      required: false
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Useful outcome
+      description: What decision, clarification, or next step would make this discussion successful?
+    validations:
+      required: true
+  - type: checkboxes
+    id: routing
+    attributes:
+      label: Routing check
+      options:
+        - label: This is a discussion, not a reproducible bug report or already-scoped implementation task.
+          required: true

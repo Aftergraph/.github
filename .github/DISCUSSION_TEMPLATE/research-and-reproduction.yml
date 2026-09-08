@@ -1,0 +1,61 @@
+title: "[Research/Reproduction] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this category for MISSION-Bench runs, conformance attempts, independent implementations, contradictory results, and extensions. Evidence beats confidence.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Contribution type
+      options:
+        - Independent reproduction
+        - Conformance implementation
+        - Contradictory result
+        - Benchmark result
+        - Method critique
+        - Extension or follow-up study
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: Claim, study, spec, or artifact under test
+      description: Include exact version, commit SHA, release, or paper section.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime, model/provider/version, hardware, dependencies, seeds, and relevant configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: Method
+      description: Describe the procedure well enough for another person to repeat it.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Result
+      description: Report observed result, metrics, failures, and deviations from the expected result.
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Raw evidence and artifacts
+      description: Link logs, result files, scripts, traces, commits, or a reproducibility package.
+    validations:
+      required: true
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: Evidence boundary
+      options:
+        - label: I distinguish measured results from interpretation and speculation.
+          required: true

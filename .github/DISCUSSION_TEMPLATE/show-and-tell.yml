@@ -1,0 +1,36 @@
+title: "[Show & Tell] "
+body:
+  - type: textarea
+    id: project
+    attributes:
+      label: What did you build or reproduce?
+    validations:
+      required: true
+  - type: textarea
+    id: aftergraph
+    attributes:
+      label: Aftergraph components used
+      description: Specs, runtime, benchmark, contracts, repositories, or APIs used.
+    validations:
+      required: true
+  - type: textarea
+    id: links
+    attributes:
+      label: Links and artifacts
+      description: Repository, demo, report, exact commit, or reproducibility package.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Results and evidence
+      description: What worked, what failed, and what is independently verifiable?
+    validations:
+      required: true
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Limitations
+      description: State important caveats, unsupported claims, or missing reproduction.
+    validations:
+      required: true

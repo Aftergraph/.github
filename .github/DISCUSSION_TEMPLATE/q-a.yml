@@ -1,0 +1,30 @@
+title: "[Q&A] "
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Ask one concrete question where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Relevant repository, spec version, runtime, docs page, or environment.
+    validations:
+      required: false
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you already checked?
+      description: Links, commands, docs, or assumptions you have already tested.
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or output
+      description: Paste the smallest useful evidence. Remove secrets and private data.
+    validations:
+      required: false

@@ -1,0 +1,41 @@
+title: "[Prior Art/Critique] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Strong contradictory evidence is valuable. Challenge claims, mechanisms, novelty boundaries, metrics, or interpretations with inspectable sources.
+  - type: textarea
+    id: claim
+    attributes:
+      label: Claim or contribution challenged
+      description: Quote or link the exact Aftergraph claim, paper section, spec, issue, or commit.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Prior art or contradictory source
+      description: Prefer primary papers, standards, patents/claims, source code, release history, or reproducible product behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: comparison
+    attributes:
+      label: Material comparison
+      description: Explain which mechanism, semantics, or empirical result overlaps or contradicts Aftergraph and where it differs.
+    validations:
+      required: true
+  - type: textarea
+    id: consequence
+    attributes:
+      label: Consequence if correct
+      description: Should a claim be narrowed, confidence reduced, novelty class changed, spec altered, or experiment repeated?
+    validations:
+      required: true
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Limitations of this critique
+      description: State what the cited evidence does not establish.
+    validations:
+      required: false

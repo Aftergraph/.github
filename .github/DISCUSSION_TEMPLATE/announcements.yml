@@ -1,0 +1,27 @@
+title: "[Announcement] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Maintainer announcements for releases, research drops, standards milestones, and material organization changes.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What changed, and why does it matter?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Source and evidence
+      description: Link exact commits, releases, papers, docs, or other authoritative artifacts.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What should users, implementers, or researchers do differently now?
+    validations:
+      required: true
