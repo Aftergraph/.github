@@ -8,25 +8,36 @@ Discussion -> evidence -> decision -> Issue/RFC -> implementation -> verificatio
 
 A discussion is not itself a canonical specification, benchmark result, release, or governance decision. Canonical truth remains in the owning repository and exact source commit.
 
-## Categories
+## Active GitHub categories
 
-| Category | Format | Purpose |
-|---|---|---|
-| Announcements | Announcement | Releases, research drops, standards milestones, material org changes |
-| General | Open-ended | Organization-wide conversation |
-| Ideas | Open-ended | Early product, architecture, research, and ecosystem ideas |
-| Q&A | Question/answer | Questions about Aftergraph systems, research, specs, and usage |
-| Show and tell | Open-ended | Implementations, demos, reproductions, and downstream work |
-| Research and Reproduction | Open-ended | MISSION-Bench, conformance, independent implementation, contradictory results |
-| Specifications and RFCs | Open-ended | Proposed changes to contracts, schemas, invariants, registries, and governance |
-| Prior Art and Critique | Open-ended | Papers, patents, source code, standards, product behavior, falsification |
-| Help and Integrations | Question/answer | Runtime, protocol, SDK, deployment, and integration support |
+Organization Discussions currently use GitHub's active default categories:
 
-The YAML files under `.github/DISCUSSION_TEMPLATE/` are category forms. GitHub requires each filename to match the category slug. Default categories use GitHub's default slugs. Custom categories should be created with names that resolve to the committed slugs.
+| Category | Best use |
+|---|---|
+| Announcements | Releases, research drops, standards milestones, material org changes |
+| General | Organization-wide discussion, roadmap coordination, research registries |
+| Ideas | Product/architecture ideas, prior-art challenges, RFC formation |
+| Polls | Deliberative polls only; not evidence or normative decisions |
+| Q&A | Questions about Aftergraph systems, research, specs and usage |
+| Show and tell | Implementations, demos, reproductions and downstream work |
+
+Structured YAML forms for additional research-specific categories are committed under `.github/DISCUSSION_TEMPLATE/`. GitHub requires the category itself to exist before a same-slug form becomes active. Until those custom categories are created in the source-repository UI, use the default routing above. The missing UI ceremony should not block useful work.
+
+## Canonical threads
+
+- Welcome: https://github.com/orgs/Aftergraph/discussions/9
+- What comes after Graph Engineering?: https://github.com/orgs/Aftergraph/discussions/10
+- SPEC-001 implementation request: https://github.com/orgs/Aftergraph/discussions/11
+- MISSION-Bench reproduction registry: https://github.com/orgs/Aftergraph/discussions/12
+- Prior Art Challenge: https://github.com/orgs/Aftergraph/discussions/13
+- Architecture RFC: https://github.com/orgs/Aftergraph/discussions/14
+- Sentinel SHIP-verdict requirements: https://github.com/orgs/Aftergraph/discussions/15
 
 ## Routing
 
-Use **Discussions** for exploration, questions, critique, reproduction reports, and RFC formation. Use **Issues** once the work is concrete, bounded, and actionable. Use **pull requests** for proposed repository changes. Use the owning research/spec repository for canonical evidence, conformance vectors, and normative text.
+Use **Discussions** for exploration, questions, critique, reproduction reports, roadmap input, and RFC formation. Use **Issues** once the work is concrete, bounded, and actionable. Use **pull requests** for proposed repository changes. Use the owning research/spec repository for canonical evidence, conformance vectors, and normative text.
+
+For organization-wide normative proposals, follow `RFC-PROCESS.md`.
 
 Security vulnerabilities do not belong in public Discussions. Follow `SECURITY.md`.
 

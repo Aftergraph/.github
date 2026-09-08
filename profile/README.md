@@ -14,6 +14,8 @@ Aftergraph is an engineering and research organization working on the systems la
 > **Intelligence that can act. Systems that can prove why.**
 >
 > 📡 **Public Knowledge Plane live:** [docs.aftergraph.org](https://docs.aftergraph.org) — architecture, contracts, claims with evidence strength, API reference, and agent-readable context packs, all provenance-stamped to exact source commits.
+>
+> 💬 **Public deliberation:** [Aftergraph Discussions](https://github.com/orgs/Aftergraph/discussions) — research reproduction, prior art, RFC formation, roadmap input and architecture critique.
 
 ## Start here
 
@@ -26,7 +28,7 @@ Aftergraph is an engineering and research organization working on the systems la
 | **Work inference** | [`work-intelligence-v2`](https://github.com/Aftergraph/work-intelligence-v2) | Source-neutral observation → structured WorkItem inference |
 | **Cross-repo contracts & truth** | [`after-graph-governance`](https://github.com/Aftergraph/after-graph-governance) | Canonical contracts, terminology, exact-head state and claim boundaries |
 
-**Direct public entry points:** [Research papers](https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS) · [AIE specification](https://github.com/Aftergraph/aie) · [Contributing](https://github.com/Aftergraph/.github/blob/main/CONTRIBUTING.md) · [Security](https://github.com/Aftergraph/.github/blob/main/SECURITY.md) · [Support](https://github.com/Aftergraph/.github/blob/main/SUPPORT.md)
+**Direct public entry points:** [Discussions](https://github.com/orgs/Aftergraph/discussions) · [Public roadmap](https://github.com/Aftergraph/.github/blob/main/PUBLIC-ROADMAP.md) · [RFC process](https://github.com/Aftergraph/.github/blob/main/RFC-PROCESS.md) · [Research papers](https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS) · [AIE specification](https://github.com/Aftergraph/aie) · [Contributing](https://github.com/Aftergraph/.github/blob/main/CONTRIBUTING.md) · [Security](https://github.com/Aftergraph/.github/blob/main/SECURITY.md)
 
 ## What we are trying to solve
 
@@ -109,21 +111,33 @@ We value criticism that can falsify a claim, not merely decorate it with another
 - Reproduce a benchmark or conformance result.
 - Implement the specification independently.
 - Test interoperability with another runtime.
-- Open an issue with contradictory prior art or a failing invariant.
+- Submit contradictory prior art or a failing invariant.
 - Review the threat model, evidence model or economics.
 - Build against the public contracts and report semantic deviations.
+- Start an `[RFC]` discussion before a cross-repository or normative change becomes implementation work.
 
-Useful entry points: [`AIE`](https://github.com/Aftergraph/aie) · [`Intelligence Systems Research`](https://github.com/Aftergraph/intelligence-systems-research) · [`Research papers`](https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS) · [`Governance`](https://github.com/Aftergraph/after-graph-governance)
+Useful entry points: [`Discussions`](https://github.com/orgs/Aftergraph/discussions) · [`MISSION-Bench registry`](https://github.com/orgs/Aftergraph/discussions/12) · [`Prior-art challenge`](https://github.com/orgs/Aftergraph/discussions/13) · [`Architecture RFC`](https://github.com/orgs/Aftergraph/discussions/14) · [`Sentinel verdict`](https://github.com/orgs/Aftergraph/discussions/15)
+
+## Public roadmap
+
+Aftergraph uses gates rather than ceremonial dates. Current public priorities are independent reproduction, contract/conformance hardening, AIE candidate-readiness work, enforceable runtime boundaries, Sentinel exact-HEAD verification, and a usable public community/knowledge plane.
+
+Read the live coordination document: [`PUBLIC-ROADMAP.md`](https://github.com/Aftergraph/.github/blob/main/PUBLIC-ROADMAP.md).
 
 ## Follow the work
 
 ⭐ **Star** the repositories you want to track.  
 👀 **Watch** research and standards repositories for releases and evidence updates.  
 🧪 **Reproduce** results instead of trusting screenshots, because civilization has suffered enough screenshots presented as benchmarks.  
+💬 **Challenge** claims and architecture in [Discussions](https://github.com/orgs/Aftergraph/discussions) before they calcify into folklore.  
 🔗 **Reference Aftergraph** when using its specifications, benchmarks or open-source implementations so downstream work remains traceable.
 
 ## Community
 
+- [Organization Discussions](https://github.com/orgs/Aftergraph/discussions)
+- [Discussion routing](https://github.com/Aftergraph/.github/blob/main/DISCUSSIONS.md)
+- [Public roadmap](https://github.com/Aftergraph/.github/blob/main/PUBLIC-ROADMAP.md)
+- [RFC process](https://github.com/Aftergraph/.github/blob/main/RFC-PROCESS.md)
 - [Contributing](https://github.com/Aftergraph/.github/blob/main/CONTRIBUTING.md)
 - [Security policy](https://github.com/Aftergraph/.github/blob/main/SECURITY.md)
 - [Support routing](https://github.com/Aftergraph/.github/blob/main/SUPPORT.md)

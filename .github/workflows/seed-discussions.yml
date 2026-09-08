@@ -72,3 +72,5 @@ jobs:
           create_discussion "$IDEAS_ID" "Prior Art Challenge: What Has Aftergraph Reinvented?" ".github/discussion-seeds/prior-art.md"
           create_discussion "$GENERAL_ID" "Aftergraph Architecture RFC: Where Are the Real Boundaries?" ".github/discussion-seeds/architecture-rfc.md"
           create_discussion "$IDEAS_ID" "Sentinel: What Must a SHIP Verdict Prove?" ".github/discussion-seeds/sentinel-verdict.md"
+          create_discussion "$GENERAL_ID" "Aftergraph Public Roadmap: Evidence Before Dates" ".github/discussion-seeds/public-roadmap.md"
+          create_discussion "$IDEAS_ID" "RFC Intake: How Aftergraph Proposals Become Changes" ".github/discussion-seeds/rfc-intake.md"
