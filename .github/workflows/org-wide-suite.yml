@@ -21,31 +21,31 @@ permissions:
 
 jobs:
   gate-trust-gateway:
-    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@56d70aace61364978e23cd75c9925a54aa706e18 # main
     with:
       target_repo: trust-gateway
       siblings: "after-graph-governance aie works-execution"
 
   gate-works-execution:
-    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@56d70aace61364978e23cd75c9925a54aa706e18 # main
     with:
       target_repo: works-execution
       siblings: "after-graph-governance"
 
   gate-aie:
-    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@56d70aace61364978e23cd75c9925a54aa706e18 # main
     with:
       target_repo: aie
       siblings: "after-graph-governance"
 
   gate-work-intelligence-v2:
-    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@56d70aace61364978e23cd75c9925a54aa706e18 # main
     with:
       target_repo: work-intelligence-v2
       siblings: "after-graph-governance"
 
   gate-intelligence-systems-research:
-    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@main
+    uses: Aftergraph/.github/.github/workflows/polyrepo-integration-gate.yml@56d70aace61364978e23cd75c9925a54aa706e18 # main
     with:
       target_repo: intelligence-systems-research
       siblings: "after-graph-governance aie"
