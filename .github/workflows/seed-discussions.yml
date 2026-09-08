@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/seed-discussions.yml
+      - .github/discussion-seeds/**
   workflow_dispatch:
 
 permissions:
@@ -67,3 +68,7 @@ jobs:
           create_discussion "$GENERAL_ID" "Welcome to Aftergraph" ".github/discussion-seeds/welcome.md"
           create_discussion "$IDEAS_ID" "What comes after Graph Engineering?" ".github/discussion-seeds/after-graph.md"
           create_discussion "$GENERAL_ID" "SPEC-001 Mission Contract: Request for Implementations" ".github/discussion-seeds/spec-001.md"
+          create_discussion "$GENERAL_ID" "MISSION-Bench Reproduction Registry" ".github/discussion-seeds/mission-bench.md"
+          create_discussion "$IDEAS_ID" "Prior Art Challenge: What Has Aftergraph Reinvented?" ".github/discussion-seeds/prior-art.md"
+          create_discussion "$GENERAL_ID" "Aftergraph Architecture RFC: Where Are the Real Boundaries?" ".github/discussion-seeds/architecture-rfc.md"
+          create_discussion "$IDEAS_ID" "Sentinel: What Must a SHIP Verdict Prove?" ".github/discussion-seeds/sentinel-verdict.md"
