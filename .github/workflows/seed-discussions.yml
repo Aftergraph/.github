@@ -10,11 +10,12 @@ on:
 
 permissions:
   contents: read
-  discussions: write
 
 jobs:
   seed:
     runs-on: ubuntu-latest
+    permissions:
+      discussions: write
     env:
       GH_TOKEN: ${{ github.token }}
       OWNER: Aftergraph
