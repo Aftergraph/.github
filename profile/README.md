@@ -25,8 +25,9 @@ Aftergraph is an engineering and research organization working on the systems la
 | **Authority, delegation & institution semantics** | [`aie`](https://github.com/Aftergraph/aie) | Agentic Institution Engineering Draft 0.3, authority leases, revocation, budgets, evidence semantics |
 | **Runtime enforcement** | [`trust-gateway`](https://github.com/Aftergraph/trust-gateway) | Trust and control boundary for governed autonomous execution |
 | **Durable autonomous work** | [`works-execution`](https://github.com/Aftergraph/works-execution) | Mission execution, budgets, evidence, lifecycle and durable work primitives |
-| **Work inference** | [`work-intelligence-v2`](https://github.com/Aftergraph/work-intelligence-v2) | Source-neutral observation → structured WorkItem inference |
+| **Work inference** | [`wi-backend`](https://github.com/Aftergraph/wi-backend) | Source-neutral observation → structured canonical WorkItem inference |
 | **Cross-repo contracts & truth** | [`after-graph-governance`](https://github.com/Aftergraph/after-graph-governance) | Canonical contracts, terminology, exact-head state and claim boundaries |
+| **Scheduled organization sensing** | [`aftergraph-cron-fabric`](https://github.com/Aftergraph/aftergraph-cron-fabric) | Read-only scheduled observation, evidence gating, dedupe and escalation |
 
 **Direct public entry points:** [Discussions](https://github.com/orgs/Aftergraph/discussions) · [Public roadmap](https://github.com/Aftergraph/.github/blob/main/PUBLIC-ROADMAP.md) · [RFC process](https://github.com/Aftergraph/.github/blob/main/RFC-PROCESS.md) · [Research papers](https://github.com/Aftergraph/intelligence-systems-research/tree/main/PAPERS) · [AIE specification](https://github.com/Aftergraph/aie) · [Contributing](https://github.com/Aftergraph/.github/blob/main/CONTRIBUTING.md) · [Security](https://github.com/Aftergraph/.github/blob/main/SECURITY.md)
 
@@ -100,9 +101,13 @@ Aftergraph intentionally composes existing standards and protocols where they al
 | [`Aftergraph/after-graph-governance`](https://github.com/Aftergraph/after-graph-governance) | Cross-repository governance and canonical contracts |
 | [`Aftergraph/trust-gateway`](https://github.com/Aftergraph/trust-gateway) | Runtime trust and enforcement surface |
 | [`Aftergraph/works-execution`](https://github.com/Aftergraph/works-execution) | Durable mission execution and evidence-bearing work |
-| [`Aftergraph/work-intelligence-v2`](https://github.com/Aftergraph/work-intelligence-v2) | Work intelligence and structured inference |
+| [`Aftergraph/wi-backend`](https://github.com/Aftergraph/wi-backend) | Canonical Work Intelligence inference and WorkItem state |
+| [`Aftergraph/sentinel`](https://github.com/Aftergraph/sentinel) | Exact-HEAD software verification and merge-ready verdicts |
+| [`Aftergraph/aftergraph-cron-fabric`](https://github.com/Aftergraph/aftergraph-cron-fabric) | Scheduled read-only organization sensing and evidence-gated escalation |
 | [`Aftergraph/studio`](https://github.com/Aftergraph/studio) | Product and operator-facing experience |
 | [`Aftergraph/brand`](https://github.com/Aftergraph/brand) | Shared visual identity and public asset system |
+
+Private, temporary, legacy-transition and incubation repositories may participate in the topology without being public entry points. Repository existence never upgrades product maturity, conformance or evidence strength.
 
 ## For researchers, implementers and reviewers
 
