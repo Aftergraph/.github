@@ -70,7 +70,7 @@ jobs:
     steps:
       # ---- Materialize target repo (sibling path, same as everything else) ----
       - name: Checkout target (${{ inputs.target_repo }})
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/${{ inputs.target_repo }}
           ref: ${{ inputs.target_ref }}
@@ -79,7 +79,7 @@ jobs:
       # ---- Materialize governance contracts (canonical source) ----
       - name: Checkout after-graph-governance
         if: contains(inputs.siblings, 'after-graph-governance')
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/after-graph-governance
           ref: main
@@ -87,7 +87,7 @@ jobs:
 
       - name: Checkout aie
         if: contains(inputs.siblings, 'aie')
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/aie
           ref: main
@@ -95,7 +95,7 @@ jobs:
 
       - name: Checkout works-execution
         if: contains(inputs.siblings, 'works-execution')
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/works-execution
           ref: main
@@ -103,7 +103,7 @@ jobs:
 
       - name: Checkout work-intelligence-v2
         if: contains(inputs.siblings, 'work-intelligence-v2')
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/work-intelligence-v2
           ref: ${{ inputs.wiv2_ref }}
@@ -111,7 +111,7 @@ jobs:
 
       - name: Checkout intelligence-systems-research
         if: contains(inputs.siblings, 'intelligence-systems-research')
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/intelligence-systems-research
           ref: main
