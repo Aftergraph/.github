@@ -1,7 +1,8 @@
 # Provenance: `.github/brand/` tree
 
 - Canonical Brand OS source: `Aftergraph/brand`, version `1.1.0`
-  (PR `Aftergraph/brand#20`; release pending owner merge — see
+  (PR `Aftergraph/brand#20` merged as `8a1f878`; release `v1.1.0`,
+  tarball SHA-256 `3d881b90…bd6f8f` — see
   `AFTERGRAPH-BRAND-ADOPTION-MATRIX.md`).
 - This `brand/` tree is a **deployed copy**, not a canonical source.
   Its "One source of truth: `brand/master/*.svg`" claim is superseded.
