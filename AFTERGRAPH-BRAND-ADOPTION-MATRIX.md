@@ -37,7 +37,7 @@ Brand OS class, and its explicit adoption state.
 | aftergraph.org | public | corporate | ADOPTED (deploy pending) | Pinned v1.1.0 sync + canonical favicon/OG wiring merged (PR #65 `ed92365`); production deploy blocked: no Cloudflare secrets |
 | docs | public | corporate | ADOPTED (deploy pending) | Pinned v1.1.0 sync + canonical chrome merged (PR #21 `1e019b9`); Sentinel page labelled working-title; production deploy needs Cloudflare secrets |
 | wi-frontend | private | product | ADOPTED | Dead wie host -> verified domain merged (PR #17 `e3c922e`); v2 contract pinned 1.1.0 (PR #19 `159ad87`); production deploy binding unverified (dashboard check needed); branch protection unavailable (private free-tier repo) |
-| wi-backend | public | technology | ADOPTED | First v2 contract live + CORS/domain fix merged (PR #68 `6d6fef9`); VDS redeploy is owner action |
+| wi-backend | public | technology | ADOPTED + LIVE | v2 contract + CORS/domain fix (PR #68); CORS separation: canonical allowlist is Aftergraph-only, rendetalje excluded (PR #75 `bfca27b`); deployed live on VDS via official script `DEPLOYMENT=PASS`, verified end-to-end |
 | studio | public | product | ADOPTED | Fork replaced by pinned v1.1.0 tree merged (PR #49 `c6b305d`); consumer test migrated, 18 gates green |
 | sentinel | public | product | CONTRACT ADOPTED / IDENTITY BLOCKED | v2 contract + naming-block provenance merged (PR #8); working-title banner on README front door (PR #9 `7affb92`); final identity still blocked: `Aftergraph/brand#19`, `Aftergraph/sentinel#7` |
 | trust-gateway | public | technology | ADOPTED | No logo; tokens + masterbrand only |
