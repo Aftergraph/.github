@@ -10,6 +10,10 @@ Brand OS class, and its explicit adoption state.
   recorded EXEMPT-uninitialized until owner initializes them. All prior rows
   re-verified: 29/29 claimed mission PRs MERGED, release tag + tarball SHAs
   match, no leftover `brand-os/*` branches.
+- Wave-12 execution 2026-09-10: `skill-abi` initialized by owner (real SABI
+  content) and adopted via PR #1; `skillport` initialized by mission scaffold
+  (README, Apache-2.0, v2 contract) — both now ADOPTED, EXEMPT-uninitialized
+  retired.
 - Canonical Brand OS source: `Aftergraph/brand`, release `v1.1.0` (commit `8a1f878`, PR #20 merged; tarball SHA-256 `3d881b90…bd6f8f`).
 - Classes follow `MIGRATION-v1.0-to-v1.1.md`: corporate, product, technology,
   research, governance, internal.
@@ -53,8 +57,8 @@ Brand OS class, and its explicit adoption state.
 | sentinel-firetest | private | internal | EXEMPT | Throwaway live-fire proof; delete after use |
 | sentinel-firetest2 | public | internal | EXEMPT | Suspected throwaway; verify purpose before any work, then delete or reclassify |
 | continuum | private | product | ADOPTED | Agentic continuity mission-bench; eval ally, no logo |
-| skill-abi | public | — (uninitialized) | EXEMPT (empty) | Created 2026-09-09; no branches/commits; adopt on owner initialization |
-| skillport | private | — (uninitialized) | EXEMPT (empty) | Created 2026-09-09; no branches/commits; adopt on owner initialization |
+| skill-abi | public | technology | ADOPTED | SABI v0.1.0-alpha.1 reference implementation; v2 contract pinned 1.1.0, draft pre-1.0 with no standard claim (PR #1 `658b311`) |
+| skillport | private | research | ADOPTED | Initial scaffold (README, Apache-2.0, v2 contract pinned 1.1.0 `5732701`); eval suites to be declared as work takes shape |
 
 ## Wave-5 priority order
 
