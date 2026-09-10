@@ -3,10 +3,9 @@
 Authoritative inventory of every Aftergraph organization repository, its
 Brand OS class, and its explicit adoption state.
 
-- Inventory date: 2026-09-09 (re-queried via `gh repo list`; 25 repos observed,
+- Inventory date: 2026-09-09; closeout 2026-09-10: all non-exempt repos adopted (merged PRs recorded per row). 25 repos observed,
   matching the checkpoint count — no additions, no removals).
-- Canonical Brand OS source: `Aftergraph/brand`, release `1.1.0`
-  (PR `Aftergraph/brand#20`, pending owner merge).
+- Canonical Brand OS source: `Aftergraph/brand`, release `v1.1.0` (commit `8a1f878`, PR #20 merged; tarball SHA-256 `3d881b90…bd6f8f`).
 - Classes follow `MIGRATION-v1.0-to-v1.1.md`: corporate, product, technology,
   research, governance, internal.
 - Rule: not every repository gets a product logo. Most repos consume the
@@ -24,31 +23,31 @@ Brand OS class, and its explicit adoption state.
 
 | Repository | Visibility | Class | Adoption state | Notes |
 | --- | --- | --- | --- | --- |
-| brand | public | canonical | IN PROGRESS | Brand OS 1.1.0 source; PR #20 pending owner merge |
-| .github | public | governance | NOT STARTED | Hosts this matrix; `brand/` tree is a competing source to convert to generated copies in Wave 3 |
-| aftergraph.org | public | corporate | NOT STARTED | Org front door; missing favicon + manual token fork to fix |
-| docs | public | corporate | NOT STARTED | Knowledge plane portal; migrate ABDE front-door wording with provenance |
-| wi-frontend | private | product | NOT STARTED | Work Intelligence web experience; endorsed identity exists in Brand OS |
-| wi-backend | public | technology | NOT STARTED | No logo; tokens + masterbrand only |
-| studio | public | product | NOT STARTED | `packages/brand` local fork must move to versioned consumption; no break to consumers |
-| sentinel | public | product | BLOCKED / NEEDS-REVIEW | Final product identity blocked: `Aftergraph/brand#19`, `Aftergraph/sentinel#7` |
-| trust-gateway | public | technology | NOT STARTED | No logo; tokens + masterbrand only |
-| runtime | private | technology | NOT STARTED | No logo; tokens + masterbrand only |
-| model-registry | private | technology | NOT STARTED | No logo; tokens + masterbrand only |
-| works-execution | public | technology | NOT STARTED | No logo; tokens + masterbrand only |
-| aftergraph-cron-fabric | public | technology | NOT STARTED | No logo; tokens + masterbrand only |
-| context-continuity | private | technology | NOT STARTED | Draft contract; no logo |
-| after-graph-governance | public | governance | NOT STARTED | Cross-repo contracts; masterbrand only |
-| intelligence-systems-research | public | research | NOT STARTED | SPEC-001 / MISSION-Bench program; research kit from Brand OS |
-| llm-research-development | private | research | NOT STARTED | Methodology/evals; no logo |
-| afm | private | research | NOT STARTED | Foundation-model research; no logo |
-| aie | public | research | NOT STARTED | Draft 0.3 semantics; do NOT label an established standard |
-| veranza | private | product | NOT STARTED | Internal hold, pre-clearance; no public identity work |
-| autonomous-venture-company | private | product | NOT STARTED | Venture OS; adoption after public-surface decision |
-| skills-vault | private | internal | NOT STARTED | Skill library; masterbrand only |
+| brand | public | canonical | RELEASED | Brand OS v1.1.0 source (PR #20 merged `8a1f878`, release `v1.1.0`) |
+| .github | public | governance | ADOPTED | Matrix + surface registry + `brand/PROVENANCE.md` deployed-copy markers (PR #21); profile ABDE wording retired (PR #22) |
+| aftergraph.org | public | corporate | ADOPTED (deploy pending) | Pinned v1.1.0 sync + canonical favicon/OG wiring merged (PR #65 `ed92365`); production deploy blocked: no Cloudflare secrets |
+| docs | public | corporate | ADOPTED (deploy pending) | Pinned v1.1.0 sync + canonical chrome merged (PR #21 `1e019b9`); Sentinel page labelled working-title; production deploy needs Cloudflare secrets |
+| wi-frontend | private | product | ADOPTED | Dead wie host -> verified domain merged (PR #17 `e3c922e`); production deploy binding unverified (dashboard check needed) |
+| wi-backend | public | technology | ADOPTED | First v2 contract live + CORS/domain fix merged (PR #68 `6d6fef9`); VDS redeploy is owner action |
+| studio | public | product | ADOPTED | Fork replaced by pinned v1.1.0 tree merged (PR #49 `c6b305d`); consumer test migrated, 18 gates green |
+| sentinel | public | product | CONTRACT ADOPTED / IDENTITY BLOCKED | v2 contract + naming-block provenance merged (PR #8); final identity still blocked: `Aftergraph/brand#19`, `Aftergraph/sentinel#7` |
+| trust-gateway | public | technology | ADOPTED | No logo; tokens + masterbrand only |
+| runtime | private | technology | ADOPTED | No logo; tokens + masterbrand only |
+| model-registry | private | technology | ADOPTED | No logo; tokens + masterbrand only |
+| works-execution | public | technology | ADOPTED | No logo; tokens + masterbrand only |
+| aftergraph-cron-fabric | public | technology | ADOPTED | No logo; tokens + masterbrand only |
+| context-continuity | private | technology | ADOPTED | Draft contract; no logo |
+| after-graph-governance | public | governance | ADOPTED | Cross-repo contracts; masterbrand only |
+| intelligence-systems-research | public | research | ADOPTED | SPEC-001 / MISSION-Bench program; research kit from Brand OS |
+| llm-research-development | private | research | ADOPTED | Methodology/evals; no logo |
+| afm | private | research | ADOPTED | Foundation-model research; no logo |
+| aie | public | research | ADOPTED | Draft 0.3 semantics; do NOT label an established standard |
+| veranza | private | product | ADOPTED | Internal hold, pre-clearance; no public identity work |
+| autonomous-venture-company | private | product | ADOPTED | Venture OS; adoption after public-surface decision |
+| skills-vault | private | internal | ADOPTED | Skill library; masterbrand only |
 | sentinel-firetest | private | internal | EXEMPT | Throwaway live-fire proof; delete after use |
 | sentinel-firetest2 | public | internal | EXEMPT | Suspected throwaway; verify purpose before any work, then delete or reclassify |
-| continuum | private | product | NOT STARTED | Agentic continuity mission-bench; eval ally, no logo |
+| continuum | private | product | ADOPTED | Agentic continuity mission-bench; eval ally, no logo |
 
 ## Wave-5 priority order
 
