@@ -542,6 +542,25 @@ class CommentOnlyGuardTest(unittest.TestCase):
                             "workflow permissions must stay read-only")
 
 
+class T11EngineSelfCheckoutTest(unittest.TestCase):
+    def test_t11_engine_checked_out_by_repo_pin(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("repository: Aftergraph/.github", workflow)
+        m = __import__("re").search(
+            r"repository: Aftergraph/\.github\s*\n\s*ref: ([0-9a-f]{40})\b",
+            workflow)
+        self.assertIsNotNone(
+            m, "engine checkout ref must be a pinned 40-hex SHA")
+
+    def test_t11_no_caller_relative_engine_paths(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertNotRegex(workflow, r"uses:\s*\./actions/",
+                            "action must resolve inside engine checkout")
+        self.assertIn("uses: ./sentinel-engine/actions/agent-review",
+                      workflow)
+        self.assertIn("sentinel-engine/scripts/agent_review.py", workflow)
+
+
 class T10SentinelBrandTest(unittest.TestCase):
     def test_t10_default_agent_name_is_sentinel_gate(self):
         packet = json.loads(FIXTURE.read_text(encoding="utf-8"))
