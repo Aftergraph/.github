@@ -92,10 +92,22 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
-            --jq '[.[] | {number, state, merged_at: .merged_at}]' > /tmp/prs.json
-          python3 sentinel-engine/scripts/agent_review.py --audit-push "${{ github.sha }}" \
-            --prs /tmp/prs.json
+          # PR/commit association indexes seconds after push; retry before
+          # crying NON_PR_HEAD so legit merge pushes are not flagged.
+          # Fail-closed is preserved: persistent absence still exits 1.
+          attempt=1
+          while [ $attempt -le 4 ]; do
+            gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+              --jq '[.[] | {number, state, merged_at: .merged_at}]' > /tmp/prs.json
+            if python3 sentinel-engine/scripts/agent_review.py --audit-push "${{ github.sha }}" \
+              --prs /tmp/prs.json; then
+              exit 0
+            fi
+            echo "audit attempt $attempt inconclusive; waiting 30s" >&2
+            attempt=$((attempt + 1))
+            sleep 30
+          done
+          exit 1
 
   selftest:
     name: selftest (agent_review unit tests)
