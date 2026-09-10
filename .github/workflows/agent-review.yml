@@ -28,6 +28,13 @@ on:
           Full PR URL, e.g. https://github.com/Aftergraph/trust-gateway/pull/83
         required: true
         type: string
+  # Called by per-repo caller workflows (see docs/agent-review.md).
+  # Callers trigger on pull_request_target + push; merge_group reaches
+  # the engine once callers pass pr_url (future slice).
+  workflow_call:
+    secrets:
+      token:
+        required: false
 
 permissions:
   contents: read
