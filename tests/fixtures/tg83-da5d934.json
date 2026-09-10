@@ -1,0 +1,67 @@
+{
+  "repo": "trust-gateway",
+  "number": 83,
+  "url": "https://github.com/Aftergraph/trust-gateway/pull/83",
+  "title": "feat(tg): consent ledger state and enforcement (CON-001..004, CONS-REV-001/002)",
+  "head_sha": "da5d934450a24debae08b5d31ccef55d54abc6a6",
+  "head_branch": "feat/tg-consent-ledger-v0-1",
+  "base": "main",
+  "mergeable": "MERGEABLE",
+  "merge_state": "BLOCKED",
+  "review_decision": "REVIEW_REQUIRED",
+  "diffstat": {
+    "additions": 1018,
+    "deletions": 0,
+    "files": 2
+  },
+  "checks": [
+    {
+      "name": "auto-merge",
+      "status": "COMPLETED",
+      "conclusion": "SKIPPED"
+    },
+    {
+      "name": "test",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "Analyze (javascript)",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "gate / integration",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "CodeQL",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    }
+  ],
+  "reviews": [
+    {
+      "author": "chatgpt-codex-connector",
+      "state": "COMMENTED"
+    },
+    {
+      "author": "JonasAbde",
+      "state": "COMMENTED"
+    },
+    {
+      "author": "JonasAbde",
+      "state": "COMMENTED"
+    },
+    {
+      "author": "JonasAbde",
+      "state": "COMMENTED"
+    },
+    {
+      "author": "chatgpt-codex-connector",
+      "state": "COMMENTED"
+    }
+  ],
+  "all_required_checks_green": true
+}

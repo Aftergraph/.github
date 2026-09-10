@@ -1,0 +1,20 @@
+{
+  "repo": "autonomous-venture-company",
+  "number": 1021,
+  "url": "https://github.com/Aftergraph/autonomous-venture-company/pull/1021",
+  "title": "feat(contracts): AVC dissolution ledger gate RET-001..RET-007",
+  "head_sha": "ed5c0728401527ec906b9fadbdc334f21b55cc99",
+  "head_branch": "v4/avc-retirement-extraction-ledger",
+  "base": "main",
+  "mergeable": "UNKNOWN",
+  "merge_state": "UNKNOWN",
+  "review_decision": "UNKNOWN",
+  "diffstat": {
+    "additions": 368,
+    "deletions": 0,
+    "files": 3
+  },
+  "checks": [],
+  "reviews": [],
+  "all_required_checks_green": false
+}

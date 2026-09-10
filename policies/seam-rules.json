@@ -1,0 +1,26 @@
+{
+  "$id": "seam-rules/0.1",
+  "description": "Seam/binding patterns for the agent-review C4 gate (slice 2, decisions D4). Any cited ledger ID must match a known shape AND resolve to a ledger entry; genesis/identity/evidence records must be complete; expiry denies at-or-past cutoff (>=, never >); cross-repo contract pins must match; AVC bans new identifiers; memory is never authority. Any ERROR/UNKNOWN => BLOCKED.",
+  "ledger_id_patterns": [
+    "CON-\\d+",
+    "CONS-REV-\\d+",
+    "TEN-[A-Z]+-\\d+",
+    "GOLDEN-\\d+",
+    "RET-\\d+",
+    "VOI-\\d+",
+    "PCK-\\d+",
+    "PROM-[A-Z]+-\\d+"
+  ],
+  "genesis_required_fields": ["subject", "purpose", "tenant"],
+  "identity_required_fields": ["ids", "lineage", "timestamp"],
+  "expiry_policy": "deny-at-or-past-cutoff",
+  "evidence_pattern": "^evidence:([^/:\\s]+)/(\\S+)$",
+  "no_new_identifiers_repos": ["autonomous-venture-company"],
+  "memory_authority_deny": true,
+  "contract_pins": {
+    "platform-event-ref": "0.1",
+    "golden-mission": "0.1",
+    "voice-interaction": "0.1",
+    "promotion-gates": "0.1"
+  }
+}

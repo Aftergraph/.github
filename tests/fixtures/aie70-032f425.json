@@ -1,0 +1,51 @@
+{
+  "repo": "aie",
+  "number": 70,
+  "url": "https://github.com/Aftergraph/aie/pull/70",
+  "title": "feat(gateway): canonical revocation-state digest (Task #61)",
+  "head_sha": "032f4253f24ba67f941289709f0a5afb4c3f21db",
+  "head_branch": "feat/sdd-task-61-revocation-digest",
+  "base": "main",
+  "mergeable": "UNKNOWN",
+  "merge_state": "UNKNOWN",
+  "review_decision": "REVIEW_REQUIRED",
+  "diffstat": {
+    "additions": 6,
+    "deletions": 13,
+    "files": 2
+  },
+  "checks": [
+    {
+      "name": "CodeQL",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "auto-merge",
+      "status": "COMPLETED",
+      "conclusion": "SKIPPED"
+    },
+    {
+      "name": "test (3.12)",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "test (3.13)",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "test (3.11)",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS"
+    }
+  ],
+  "reviews": [],
+  "all_required_checks_green": true
+}
