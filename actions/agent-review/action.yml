@@ -1,0 +1,144 @@
+name: "Agent review (slice 3 final, COMMENT-only emit-only)"
+
+description: >-
+  Slice 3 (final) of the code-review agent. READ-ONLY + COMMENT-only
+  permanently: collects the PR head SHA, live check runs, and PR labels via
+  read-only GitHub API calls, runs scripts/agent_review.py (C1 delta, C2
+  pinned-checks incl. full D1 pin set, C3 AVC empty-pin private-repo mode
+  with OWNER_OVERRIDE_ACCEPT_RISK), and emits the review packet JSON to
+  stdout only. Posts NOTHING: no comments, no approvals, no reviews writes,
+  no commit statuses, no governance writes.
+
+inputs:
+  pr-url:
+    description: "Full PR URL, e.g. https://github.com/Aftergraph/trust-gateway/pull/83"
+    required: true
+  agent-version:
+    description: "Agent version recorded in the packet agent_review block."
+    required: false
+    default: "0.3.0"
+  policy:
+    description: "Repo-relative path to the pinned-checks policy file."
+    required: false
+    default: "policies/pinned-checks.json"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pinned Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: "3.12"
+
+    - name: Install pinned gh CLI
+      shell: bash
+      env:
+        GH_VERSION: "2.46.0"
+      run: |
+        set -euo pipefail
+        curl -fsSL -o /tmp/gh.deb \
+          "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.deb"
+        sudo dpkg -i /tmp/gh.deb
+        gh --version
+
+    - name: Collect PR data (read-only API)
+      shell: bash
+      env:
+        GH_TOKEN: ${{ env.GH_TOKEN }}
+        PR_URL: ${{ inputs.pr-url }}
+      run: |
+        set -euo pipefail
+        test -n "${GH_TOKEN:-}" || { echo "GH_TOKEN is required" >&2; exit 1; }
+        python3 - "$PR_URL" <<'EOF'
+        import json, re, subprocess, sys
+
+        url = sys.argv[1]
+        m = re.fullmatch(r"https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)/pull/([0-9]+)", url)
+        if not m:
+            print(f"Invalid PR URL (must be https://github.com/<owner>/<repo>/pull/<n>): {url}",
+                  file=sys.stderr)
+            sys.exit(1)
+        owner, repo, number = m.groups()
+
+        def api(path):
+            out = subprocess.run(["gh", "api", path], capture_output=True, text=True, check=True)
+            return json.loads(out.stdout)
+
+        pr = api(f"repos/{owner}/{repo}/pulls/{number}")
+        head_sha = pr["head"]["sha"]
+        runs = api(f"repos/{owner}/{repo}/commits/{head_sha}/check-runs?per_page=100")
+        reviews = api(f"repos/{owner}/{repo}/pulls/{number}/reviews?per_page=100")
+        with open("/tmp/agent_review_pr.json", "w", encoding="utf-8") as f:
+            json.dump({"owner": owner, "repo": repo, "number": int(number),
+                       "pr": pr, "check_runs": runs.get("check_runs", []),
+                       "reviews": reviews}, f)
+        print(f"collected {owner}/{repo}#{number} head {head_sha}", file=sys.stderr)
+        EOF
+
+    - name: Emit review packet (stdout only)
+      shell: bash
+      env:
+        GH_TOKEN: ${{ env.GH_TOKEN }}
+        PR_URL: ${{ inputs.pr-url }}
+      run: |
+        set -euo pipefail
+        REVIEW_DECISION=$(gh pr view "$PR_URL" --json reviewDecision -q '.reviewDecision // "UNKNOWN"')
+        gh pr view "$PR_URL" --json labels -q '.labels[].name' > /tmp/agent_review_label_names.txt
+        python3 -c "import json; names=[l.strip() for l in open('/tmp/agent_review_label_names.txt', encoding='utf-8') if l.strip()]; json.dump(names, open('/tmp/agent_review_labels.json','w',encoding='utf-8'))"
+        python3 - "$REVIEW_DECISION" "${{ inputs.policy }}" <<'EOF'
+        import json, sys
+
+        review_decision, policy_path = sys.argv[1:3]
+        bundle = json.load(open("/tmp/agent_review_pr.json", encoding="utf-8"))
+        pr, owner, repo = bundle["pr"], bundle["owner"], bundle["repo"]
+        head_sha = pr["head"]["sha"]
+        policy = json.load(open(policy_path, encoding="utf-8"))
+        pinned = (policy.get("checks") or {}).get(repo, [])
+
+        checks = [{"name": c["name"],
+                   "status": (c.get("status") or "UNKNOWN").upper(),
+                   "conclusion": (c.get("conclusion").upper()
+                                   if c.get("conclusion") else None)}
+                  for c in bundle["check_runs"]]
+        by_name = {c["name"]: c for c in checks}
+        all_green = all(by_name.get(n, {}).get("status") == "COMPLETED"
+                        and by_name.get(n, {}).get("conclusion") == "SUCCESS"
+                        for n in pinned) if pinned else False
+
+        mergeable = pr.get("mergeable")
+        packet = {
+            "repo": repo,
+            "number": pr["number"],
+            "url": pr["html_url"],
+            "title": pr["title"],
+            "head_sha": head_sha,
+            "head_branch": pr["head"]["ref"],
+            "base": pr["base"]["ref"],
+            "mergeable": ("MERGEABLE" if mergeable is True
+                          else "NOT_MERGEABLE" if mergeable is False else "UNKNOWN"),
+            "merge_state": str(pr.get("mergeable_state", "unknown")).upper(),
+            "review_decision": review_decision,
+            "diffstat": {"additions": pr.get("additions", 0),
+                         "deletions": pr.get("deletions", 0),
+                         "files": pr.get("changed_files", 0)},
+            "checks": checks,
+            "reviews": [{"author": r["user"]["login"], "state": r["state"]}
+                        for r in bundle["reviews"]],
+            "all_required_checks_green": all_green,
+        }
+        with open("/tmp/agent_review_packet.json", "w", encoding="utf-8") as f:
+            json.dump(packet, f, indent=2, sort_keys=True)
+
+        live = {"checks": checks}
+        with open("/tmp/agent_review_live_checks.json", "w", encoding="utf-8") as f:
+            json.dump(live, f)
+        EOF
+        python3 scripts/agent_review.py \
+          --packet /tmp/agent_review_packet.json \
+          --current-head "$(python3 -c "import json;print(json.load(open('/tmp/agent_review_pr.json'))['pr']['head']['sha'])")" \
+          --checks /tmp/agent_review_live_checks.json \
+          --policy "${{ inputs.policy }}" \
+          --labels-file /tmp/agent_review_labels.json \
+          --agent-name "agent-review" \
+          --agent-version "${{ inputs.agent-version }}" \
+          --run-id "${{ github.run_id }}"

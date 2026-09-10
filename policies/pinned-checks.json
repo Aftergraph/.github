@@ -1,0 +1,43 @@
+{
+  "$id": "pinned-checks/0.3",
+  "description": "Per-repo named required checks for the agent-review gate (slice 3 final, per v4-execution/agent-review-decisions.md D1). A listed check must be present with status COMPLETED and conclusion SUCCESS, otherwise the verdict is BLOCKED. autonomous-venture-company has an EMPTY pin set (no CI): it stays BLOCKED with EMPTY_PIN_SET unless the explicit owner-override label OWNER_OVERRIDE_ACCEPT_RISK is present (see docs/agent-review.md). Unknown repos fail closed with POLICY_UNKNOWN_REPO.",
+  "checks": {
+    "trust-gateway": [
+      "test",
+      "gate / integration",
+      "Analyze (javascript)",
+      "CodeQL"
+    ],
+    "aie": [
+      "test (3.11)",
+      "test (3.12)",
+      "test (3.13)",
+      "Analyze (python)",
+      "CodeQL"
+    ],
+    "studio": [
+      "Monolithic Release Verification (18 Gates)",
+      "Analyze (javascript)",
+      "CodeQL"
+    ],
+    "works-execution": [
+      "test",
+      "Analyze (go)",
+      "CodeQL"
+    ],
+    "wi-backend": [
+      "test (3.11)",
+      "test (3.12)",
+      "Analyze (python)",
+      "production-container-smoke",
+      "CodeQL"
+    ],
+    "runtime": [
+      "build-test"
+    ],
+    "model-registry": [
+      "validate"
+    ],
+    "autonomous-venture-company": []
+  }
+}

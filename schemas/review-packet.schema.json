@@ -1,0 +1,95 @@
+{
+  "$id": "review-packet/0.3",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Review packet (sole-maintainer 14-field packet + additive agent block)",
+  "description": "Original 14 fields from after-graph-governance PR #144 docs/evidence/sole-maintainer-merge-window-2026-09-10.json. The additive agent_review block (slices 1-3) is optional; old readers must ignore it. Slice 3 adds reason codes EMPTY_PIN_SET and OWNER_OVERRIDE_ACCEPT_RISK (AVC private-repo mode) and a separate push-audit finding stream (AUDIT_PASS/AUDIT_FAIL); the 14 required fields and 8 agent_review fields are unchanged.",
+  "type": "object",
+  "required": [
+    "repo",
+    "number",
+    "url",
+    "title",
+    "head_sha",
+    "head_branch",
+    "base",
+    "mergeable",
+    "merge_state",
+    "review_decision",
+    "diffstat",
+    "checks",
+    "reviews",
+    "all_required_checks_green"
+  ],
+  "properties": {
+    "repo": { "type": "string" },
+    "number": { "type": "integer" },
+    "url": { "type": "string" },
+    "title": { "type": "string" },
+    "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "head_branch": { "type": "string" },
+    "base": { "type": "string" },
+    "mergeable": { "type": "string" },
+    "merge_state": { "type": "string" },
+    "review_decision": { "type": "string" },
+    "diffstat": {
+      "type": "object",
+      "required": ["additions", "deletions", "files"],
+      "properties": {
+        "additions": { "type": "integer" },
+        "deletions": { "type": "integer" },
+        "files": { "type": "integer" }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "conclusion"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "conclusion": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["author", "state"],
+        "properties": {
+          "author": { "type": "string" },
+          "state": { "type": "string" }
+        }
+      }
+    },
+    "all_required_checks_green": { "type": "boolean" },
+    "agent_review": {
+      "type": "object",
+      "description": "Additive slices 1-3 agent block. Optional; old readers ignore it.",
+      "required": [
+        "name",
+        "version",
+        "run_id",
+        "reviewed_head_sha",
+        "current_head_sha",
+        "delta_clean",
+        "verdict",
+        "reason_codes"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "run_id": { "type": "string" },
+        "reviewed_head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "current_head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "delta_clean": { "type": "boolean" },
+        "verdict": { "type": "string", "enum": ["MERGEABLE", "BLOCKED"] },
+        "reason_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
