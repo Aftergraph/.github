@@ -58,6 +58,15 @@ receipts `sentinel.receipt/0.1`, JSONL ledger). Division of labor:
   the gate never requires Sentinel to run and Sentinel never requires
   the gate. Either side works alone.
 
+## Engine pin maintenance
+
+The workflow checks out its own engine repo by exact SHA
+(`sentinel-engine`). Whenever `actions/`, `scripts/` or `policies/`
+change on main, open a follow-up PR bumping the three `ref:` pins in
+`.github/workflows/agent-review.yml` to the new main SHA, then re-pin
+all per-repo callers the same way. The T11 tests fail if the ref is
+not a 40-hex SHA.
+
 ## Residual risks
 
 - Token compromise can disable the workflow itself.

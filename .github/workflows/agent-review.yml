@@ -49,15 +49,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      # Pinned action SHA; pinned base SHA (never the PR head).
-      - name: Checkout base (pinned SHA only)
+      # Engine self-checkout: under workflow_call, ./ paths resolve in
+      # the CALLER repo, which has no engine files. Pin the engine repo
+      # by exact SHA (never a branch). Bump this pin whenever
+      # actions/, scripts/ or policies/ change (see docs/agent-review.md).
+      - name: Checkout engine (pinned SHA only)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          repository: Aftergraph/.github
+          ref: 80ba2e7c804265c889aea2407b19730249965ade
+          path: sentinel-engine
           persist-credentials: false
 
       - name: Run agent review (emits packet to stdout only)
-        uses: ./actions/agent-review
+        uses: ./sentinel-engine/actions/agent-review
         with:
           pr-url: ${{ github.event.pull_request.html_url || inputs.pr_url }}
         env:
@@ -74,10 +79,12 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout base (pinned SHA only)
+      - name: Checkout engine (pinned SHA only)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.sha }}
+          repository: Aftergraph/.github
+          ref: 80ba2e7c804265c889aea2407b19730249965ade
+          path: sentinel-engine
           persist-credentials: false
 
       - name: Audit main head for PR provenance
@@ -87,7 +94,7 @@ jobs:
         run: |
           gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
             --jq '[.[] | {number, state, merged_at: .merged_at}]' > /tmp/prs.json
-          python3 scripts/agent_review.py --audit-push "${{ github.sha }}" \
+          python3 sentinel-engine/scripts/agent_review.py --audit-push "${{ github.sha }}" \
             --prs /tmp/prs.json
 
   selftest:
@@ -95,10 +102,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout base (pinned SHA only)
+      - name: Checkout engine (pinned SHA only)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          repository: Aftergraph/.github
+          ref: 80ba2e7c804265c889aea2407b19730249965ade
+          path: sentinel-engine
           persist-credentials: false
 
       - name: Set up pinned Python
@@ -108,4 +117,5 @@ jobs:
 
       - name: Run agent_review tests
         shell: bash
+        working-directory: sentinel-engine
         run: python3 -m unittest tests.test_agent_review -v
