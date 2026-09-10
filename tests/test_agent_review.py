@@ -611,6 +611,12 @@ class T9Slice3WorkflowTest(unittest.TestCase):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("github.event_name != 'push'", workflow)
 
+    def test_t9_audit_retries_before_failing(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("--audit-push", workflow)
+        self.assertRegex(workflow, r"while \[ \$attempt -le \d+ \]")
+        self.assertIn("sleep 30", workflow)
+
 
 class T7OverrideLabelRenameTest(unittest.TestCase):
     def test_t7_new_label_passes_avc(self):
