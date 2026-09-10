@@ -1,0 +1,68 @@
+name: Agent review (slice 1, read-only)
+
+# Slice 1 of the code-review agent. READ-ONLY by design:
+#   - pull_request_target runs on the BASE revision only (checkout pins the
+#     base SHA; the untrusted PR head is never checked out).
+#   - Job permissions are read-only (contents/checks/pull-requests).
+#   - The job emits the review packet JSON to stdout only. It posts NOTHING:
+#     no PR comments, no commit statuses, no governance writes.
+#
+# Triggers:
+#   - pull_request_target: opened / synchronize / ready_for_review
+#   - workflow_dispatch with a PR URL for manual re-runs.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_url:
+        description: >-
+          Full PR URL, e.g. https://github.com/Aftergraph/trust-gateway/pull/83
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+
+jobs:
+  review:
+    name: review (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Pinned action SHA; pinned base SHA (never the PR head).
+      - name: Checkout base (pinned SHA only)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Run agent review (emits packet to stdout only)
+        uses: ./actions/agent-review
+        with:
+          pr-url: ${{ github.event.pull_request.html_url || inputs.pr_url }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  selftest:
+    name: selftest (agent_review unit tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout base (pinned SHA only)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up pinned Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Run agent_review tests
+        shell: bash
+        run: python3 -m unittest tests.test_agent_review -v

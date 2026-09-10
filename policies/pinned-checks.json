@@ -1,0 +1,12 @@
+{
+  "$id": "pinned-checks/0.1",
+  "description": "Per-repo named required checks for the agent-review gate (slice 1). A listed check must be present with status COMPLETED and conclusion SUCCESS, otherwise the verdict is BLOCKED. Slice 1 covers trust-gateway only; unknown repos fail closed.",
+  "checks": {
+    "trust-gateway": [
+      "test",
+      "Analyze (javascript)",
+      "gate / integration",
+      "CodeQL"
+    ]
+  }
+}
