@@ -354,7 +354,7 @@ def main(argv=None):
     parser.add_argument("--emit-dir", default=None,
                         help="Directory for the per-PR packet file "
                              "(D5; stdout is always emitted too).")
-    parser.add_argument("--agent-name", default="agent-review")
+    parser.add_argument("--agent-name", default="sentinel-gate")
     parser.add_argument("--agent-version", default="0.2.0")
     parser.add_argument("--run-id", default="local")
     args = parser.parse_args(argv)

@@ -542,6 +542,31 @@ class CommentOnlyGuardTest(unittest.TestCase):
                             "workflow permissions must stay read-only")
 
 
+class T10SentinelBrandTest(unittest.TestCase):
+    def test_t10_default_agent_name_is_sentinel_gate(self):
+        packet = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        policy = json.loads(POLICY.read_text(encoding="utf-8"))
+        pinned = policy["checks"][packet["repo"]]
+        checks = {"checks": [
+            {"name": n, "status": "COMPLETED", "conclusion": "SUCCESS"}
+            for n in pinned]}
+        with tempfile.TemporaryDirectory() as tmp:
+            packet_path = Path(tmp) / "packet.json"
+            checks_path = Path(tmp) / "checks.json"
+            packet_path.write_text(json.dumps(packet), encoding="utf-8")
+            checks_path.write_text(json.dumps(checks), encoding="utf-8")
+            cmd = [sys.executable, str(AGENT),
+                   "--packet", str(packet_path),
+                   "--current-head", packet["head_sha"],
+                   "--checks", str(checks_path),
+                   "--policy", str(POLICY)]
+            proc = subprocess.run(cmd, capture_output=True, text=True,
+                                  cwd=ROOT)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        agent = json.loads(proc.stdout)["agent_review"]
+        self.assertEqual(agent["name"], "sentinel-gate")
+
+
 class T9Slice3WorkflowTest(unittest.TestCase):
     def test_t9_merge_group_trigger_present(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

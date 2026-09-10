@@ -1,4 +1,4 @@
-name: Agent review (slice 3, read-only)
+name: Sentinel gate (read-only)
 
 # Slice 3 of the code-review agent. READ-ONLY and COMMENT-ONLY permanently:
 #   - pull_request_target runs on the BASE revision only (checkout pins the

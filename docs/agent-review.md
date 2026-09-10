@@ -36,6 +36,28 @@ No enforceable branch protection exists on private Free-tier repos, so
 associated PR fails the job visibly. Detective, not preventive — treat
 a red audit as stop-the-line. No Pro spend is assumed.
 
+## Sentinel brand mapping
+
+This gate is the merge-side half of **Sentinel by Aftergraph**
+(`Aftergraph/sentinel` repo: deterministic verdict engine, rulepacks,
+receipts `sentinel.receipt/0.1`, JSONL ledger). Division of labor:
+
+- Sentinel `lib/` decides findings and verdicts from diffs (SHIP /
+  DO_NOT_SHIP / STALE / BLOCKED); this gate enforces merge mechanics
+  (delta-vs-head, pinned checks, approval binding) and emits packets.
+- Verdict map: gate `MERGEABLE` ≈ Sentinel `SHIP`; gate `BLOCKED` ≈
+  `BLOCKED`/`DO_NOT_SHIP`; gate `DELTA_MISMATCH` ≈ Sentinel `STALE`
+  (freshness wins, never silently green — same law both sides).
+- Override map: gate label `OWNER_OVERRIDE_ACCEPT_RISK` is the
+  coarse GitHub-side twin of Sentinel's recorded override
+  (`--override` + actor + reason). The label carries no reason string —
+  that is a known gap: use it only with a reason stated in the PR
+  thread. Like Sentinel, overrides never apply to STALE/delta-mismatch.
+- Receipt seam (not dependency): when a Sentinel receipt exists for
+  the same repo+PR+head, its ID SHOULD be recorded in the packet;
+  the gate never requires Sentinel to run and Sentinel never requires
+  the gate. Either side works alone.
+
 ## Residual risks
 
 - Token compromise can disable the workflow itself.
