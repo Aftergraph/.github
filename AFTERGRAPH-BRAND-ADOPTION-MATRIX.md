@@ -5,6 +5,11 @@ Brand OS class, and its explicit adoption state.
 
 - Inventory date: 2026-09-09; closeout 2026-09-10: all non-exempt repos adopted (merged PRs recorded per row). 25 repos observed,
   matching the checkpoint count — no additions, no removals).
+- Wave-11 audit 2026-09-10: 27 repos observed — `skill-abi` (public) and
+  `skillport` (private), both created 2026-09-09, are EMPTY (no branches) and
+  recorded EXEMPT-uninitialized until owner initializes them. All prior rows
+  re-verified: 29/29 claimed mission PRs MERGED, release tag + tarball SHAs
+  match, no leftover `brand-os/*` branches.
 - Canonical Brand OS source: `Aftergraph/brand`, release `v1.1.0` (commit `8a1f878`, PR #20 merged; tarball SHA-256 `3d881b90…bd6f8f`).
 - Classes follow `MIGRATION-v1.0-to-v1.1.md`: corporate, product, technology,
   research, governance, internal.
@@ -24,13 +29,13 @@ Brand OS class, and its explicit adoption state.
 | Repository | Visibility | Class | Adoption state | Notes |
 | --- | --- | --- | --- | --- |
 | brand | public | canonical | RELEASED | Brand OS v1.1.0 source (PR #20 merged `8a1f878`, release `v1.1.0`) |
-| .github | public | governance | ADOPTED | Matrix + surface registry + `brand/PROVENANCE.md` deployed-copy markers (PR #21); profile ABDE wording retired (PR #22) |
+| .github | public | governance | ADOPTED | Matrix + surface registry + `brand/PROVENANCE.md` deployed-copy markers (PR #21); profile ABDE wording retired (PR #22); matrix closeout with merged PR refs (PR #23) |
 | aftergraph.org | public | corporate | ADOPTED (deploy pending) | Pinned v1.1.0 sync + canonical favicon/OG wiring merged (PR #65 `ed92365`); production deploy blocked: no Cloudflare secrets |
 | docs | public | corporate | ADOPTED (deploy pending) | Pinned v1.1.0 sync + canonical chrome merged (PR #21 `1e019b9`); Sentinel page labelled working-title; production deploy needs Cloudflare secrets |
-| wi-frontend | private | product | ADOPTED | Dead wie host -> verified domain merged (PR #17 `e3c922e`); production deploy binding unverified (dashboard check needed) |
+| wi-frontend | private | product | ADOPTED | Dead wie host -> verified domain merged (PR #17 `e3c922e`); v2 contract pinned 1.1.0 (PR #19 `159ad87`); production deploy binding unverified (dashboard check needed); branch protection unavailable (private free-tier repo) |
 | wi-backend | public | technology | ADOPTED | First v2 contract live + CORS/domain fix merged (PR #68 `6d6fef9`); VDS redeploy is owner action |
 | studio | public | product | ADOPTED | Fork replaced by pinned v1.1.0 tree merged (PR #49 `c6b305d`); consumer test migrated, 18 gates green |
-| sentinel | public | product | CONTRACT ADOPTED / IDENTITY BLOCKED | v2 contract + naming-block provenance merged (PR #8); final identity still blocked: `Aftergraph/brand#19`, `Aftergraph/sentinel#7` |
+| sentinel | public | product | CONTRACT ADOPTED / IDENTITY BLOCKED | v2 contract + naming-block provenance merged (PR #8); working-title banner on README front door (PR #9 `7affb92`); final identity still blocked: `Aftergraph/brand#19`, `Aftergraph/sentinel#7` |
 | trust-gateway | public | technology | ADOPTED | No logo; tokens + masterbrand only |
 | runtime | private | technology | ADOPTED | No logo; tokens + masterbrand only |
 | model-registry | private | technology | ADOPTED | No logo; tokens + masterbrand only |
@@ -48,6 +53,8 @@ Brand OS class, and its explicit adoption state.
 | sentinel-firetest | private | internal | EXEMPT | Throwaway live-fire proof; delete after use |
 | sentinel-firetest2 | public | internal | EXEMPT | Suspected throwaway; verify purpose before any work, then delete or reclassify |
 | continuum | private | product | ADOPTED | Agentic continuity mission-bench; eval ally, no logo |
+| skill-abi | public | — (uninitialized) | EXEMPT (empty) | Created 2026-09-09; no branches/commits; adopt on owner initialization |
+| skillport | private | — (uninitialized) | EXEMPT (empty) | Created 2026-09-09; no branches/commits; adopt on owner initialization |
 
 ## Wave-5 priority order
 
