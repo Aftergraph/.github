@@ -164,4 +164,4 @@ Canonical architecture, role allocation, contracts, naming, exact-head organizat
 
 <p align="center"><strong>Open research · Responsible deployment · Verifiable progress</strong></p>
 
-<sub>Brand status: Aftergraph / ABDE Intelligence remain provisional and are not represented here as trademark-cleared names.</sub>
+<sub>Brand status: masterbrand Aftergraph under Brand OS v1.1.0 (`Aftergraph/brand` release `v1.1.0`). Legacy “ABDE Intelligence” parent copy retired; Sentinel product identity pending naming review (`Aftergraph/brand#19`).</sub>
