@@ -560,6 +560,14 @@ class T11EngineSelfCheckoutTest(unittest.TestCase):
                       workflow)
         self.assertIn("sentinel-engine/scripts/agent_review.py", workflow)
 
+    def test_t11_composite_resolves_engine_assets_from_action_path(self):
+        action = ACTION.read_text(encoding="utf-8")
+        self.assertIn("ENGINE_ROOT: ${{ github.action_path }}/../..", action)
+        self.assertNotIn("python3 scripts/agent_review.py", action)
+        self.assertIn('python3 "$ENGINE_ROOT/scripts/agent_review.py"', action)
+        self.assertIn('"$ENGINE_ROOT/${{ inputs.policy }}"', action)
+        self.assertIn('--seam-rules "$ENGINE_ROOT/${{ inputs.seam-rules }}"', action)
+
 
 class T10SentinelBrandTest(unittest.TestCase):
     def test_t10_default_agent_name_is_sentinel_gate(self):
