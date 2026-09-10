@@ -86,6 +86,9 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      # The audit reads commits/{sha}/pulls, which needs pull-requests read on
+      # private repositories (public repos allow it with contents: read alone).
+      pull-requests: read
     steps:
       - name: Checkout engine (pinned SHA only)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
