@@ -11,6 +11,7 @@ Contract under test:
   errors (bad args, unreadable files, malformed SHA).
 """
 import copy
+import importlib.util
 import json
 import subprocess
 import sys
@@ -497,6 +498,50 @@ class EmitFileTest(unittest.TestCase):
             packet, packet["head_sha"], checks)
         self.assertEqual(rc, 0, err)
         self.assertEqual(emitted, [])
+
+
+def load_agent_module():
+    spec = importlib.util.spec_from_file_location("agent_review", AGENT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+AGENT_MODULE = load_agent_module()
+
+
+class EmitVisibilityTest(unittest.TestCase):
+    """The packet file must survive upload-artifact@v4.
+
+    upload-artifact excludes hidden files by default and its `*.json` glob
+    never matches dot-prefixed names, so a repo named ".github" emitted
+    ".github-39-<sha>.json" that the workflow's upload step could not see
+    ("No files were found with the provided path", run 34495179307). The
+    .github repo's own PRs failed the gate on this alone.
+    """
+
+    def test_t12_dot_repo_emits_visible_file(self):
+        doc = {"repo": ".github", "number": 39,
+               "head_sha": "12e4bac" + "0" * 33}
+        with tempfile.TemporaryDirectory() as tmp:
+            name = AGENT_MODULE.emit_packet(doc, tmp)
+            self.assertFalse(name.startswith("."), name)
+            self.assertTrue((Path(tmp) / name).is_file())
+            self.assertEqual(
+                sorted(p.name for p in Path(tmp).glob("*.json")), [name])
+            on_disk = json.loads(
+                (Path(tmp) / name).read_text(encoding="utf-8"))
+            self.assertEqual(on_disk["repo"], ".github",
+                             "slug must not rewrite the packet payload")
+
+    def test_t12_emit_slug_keeps_normal_repo_names(self):
+        self.assertEqual(AGENT_MODULE.emit_slug("trust-gateway"),
+                         "trust-gateway")
+        self.assertEqual(AGENT_MODULE.emit_slug(".github"), "github")
+        self.assertEqual(AGENT_MODULE.emit_slug(".."), "repo")
+        self.assertEqual(AGENT_MODULE.emit_slug(""), "repo")
+        self.assertEqual(AGENT_MODULE.emit_slug("a b/c"), "a-b-c")
 
 
 class FixtureReplayTest(unittest.TestCase):

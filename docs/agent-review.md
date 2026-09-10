@@ -22,6 +22,15 @@ packets. It posts nothing: no comments, no approvals, no statuses.
 - Any ERROR/UNKNOWN fails closed to BLOCKED. Exit 0 on packet emit,
   1 on audit finding, 2 on tool errors.
 
+## Packet artifact filename
+
+The per-PR file is `<repo-slug>-<number>-<head-sha7>.json` and the upload
+step globs `<emit-dir>/*.json`. `upload-artifact` skips hidden files and
+never matches dot-prefixed names, so the repo slug strips leading dots
+(`.github` → `github`, packet payload still says `.github`). A dot-prefixed
+file name makes the upload step fail with "No files were found", i.e. every
+PR in the `.github` repo itself fails the gate — keep slugs visible.
+
 ## Override label
 
 Repos with no CI (currently `autonomous-venture-company`) stay BLOCKED
