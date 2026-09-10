@@ -81,3 +81,18 @@ not a 40-hex SHA.
 - Token compromise can disable the workflow itself.
 - Force-push history rewrites are flagged, not blocked.
 - The agent never substitutes for human judgment on design or intent.
+
+## Runner selection (billing-lock workaround)
+
+Callers may pass `runner_labels` (a JSON array) so the gate runs on the
+organisation's self-hosted runners instead of GitHub-hosted ones. This is
+required for private repositories, whose GitHub-hosted jobs cannot start
+while the account's Actions billing is blocked (jobs appear with zero
+executed steps). The default preserves the previous behaviour:
+
+```yaml
+    uses: Aftergraph/.github/.github/workflows/agent-review.yml@<sha>
+    with:
+      runner_labels: '["self-hosted","linux","x64","aftergraph-ci"]'
+    secrets: inherit
+```

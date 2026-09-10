@@ -32,6 +32,14 @@ on:
   # Callers trigger on pull_request_target + push; merge_group reaches
   # the engine once callers pass pr_url (future slice).
   workflow_call:
+    inputs:
+      runner_labels:
+        # JSON array of runs-on labels. Default keeps GitHub-hosted
+        # behaviour; private repos whose hosted jobs are blocked by the
+        # Actions billing lock pass '["self-hosted","linux","x64","aftergraph-ci"]'.
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
     secrets:
       token:
         required: false
@@ -46,7 +54,7 @@ jobs:
     name: review (read-only)
     # PR/queue events only: push events are handled by push_audit below.
     if: github.event_name != 'push'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(inputs.runner_labels || '["ubuntu-latest"]') }}
     timeout-minutes: 10
     steps:
       # Engine self-checkout: under workflow_call, ./ paths resolve in
@@ -74,7 +82,7 @@ jobs:
     # visibly but cannot block a push. Repos without enforceable branch
     # protection rely on this signal plus human response.
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(inputs.runner_labels || '["ubuntu-latest"]') }}
     timeout-minutes: 10
     permissions:
       contents: read
@@ -111,7 +119,7 @@ jobs:
 
   selftest:
     name: selftest (agent_review unit tests)
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(inputs.runner_labels || '["ubuntu-latest"]') }}
     timeout-minutes: 10
     steps:
       - name: Checkout engine (pinned SHA only)
