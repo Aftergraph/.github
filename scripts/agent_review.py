@@ -11,7 +11,7 @@ Implements:
      Any of these => verdict BLOCKED. Unknown repos fail closed with
      POLICY_UNKNOWN_REPO. Repos with an explicitly empty pin list (no CI,
      currently autonomous-venture-company) fail closed with NO_CI_PROTECTION
-     unless the owner-override label is present in the binding input.
+     unless the OWNER_OVERRIDE_ACCEPT_RISK label is present in the binding input.
   C3 approval/binding (--binding JSON, optional): push-after-review
      invalidates verdict (an APPROVED review submitted before the head commit
      was pushed => PUSH_AFTER_REVIEW); unresolved review conversations =>
@@ -53,7 +53,7 @@ AGENT_BLOCK_FIELDS = (
     "delta_clean", "verdict", "reason_codes",
 )
 
-OVERRIDE_LABEL = "owner-override"
+OVERRIDE_LABEL = "OWNER_OVERRIDE_ACCEPT_RISK"
 
 APPROVED_STATE = "APPROVED"
 
@@ -105,7 +105,7 @@ def check_pinned_checks(repo, live_checks, policy, labels=()):
         return ["POLICY_UNKNOWN_REPO"]
     if len(pinned) == 0:
         # No CI on this repo: fail closed unless the owner explicitly
-        # overrides with the owner-override label.
+        # overrides with the OWNER_OVERRIDE_ACCEPT_RISK label.
         if OVERRIDE_LABEL in (labels or ()):
             return []
         return ["NO_CI_PROTECTION"]
@@ -267,6 +267,22 @@ def check_seams(repo, seams, rules, now):
     return ordered
 
 
+def audit_main_head(prs):
+    """Push-audit: reasons for a main head with associated PRs (empty => ok).
+
+    Detective control for repos without enforceable branch protection: a
+    main head is clean only when at least one associated PR record shows
+    it merged (merged_at set). Anything else (no PRs, closed-unmerged,
+    still open) yields NON_PR_HEAD. Never passes on ambiguity.
+    """
+    if not isinstance(prs, list):
+        return ["NON_PR_HEAD"]
+    for pr in prs:
+        if isinstance(pr, dict) and pr.get("merged_at"):
+            return []
+    return ["NON_PR_HEAD"]
+
+
 def evaluate(packet, current_head, live_checks, policy, agent_meta,
              binding=None, seams=None, seam_rules=None, now=None):
     reviewed_head = packet["head_sha"]
@@ -313,14 +329,20 @@ def emit_packet(doc, emit_dir):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--packet", required=True,
+    parser.add_argument("--packet", default=None,
                         help="Reviewed 14-field packet JSON file.")
-    parser.add_argument("--current-head", required=True,
+    parser.add_argument("--current-head", default=None,
                         help="Live PR head SHA (40 lowercase hex).")
-    parser.add_argument("--checks", required=True,
+    parser.add_argument("--checks", default=None,
                         help='Live checks JSON file ({"checks": [...]}).')
-    parser.add_argument("--policy", required=True,
+    parser.add_argument("--policy", default=None,
                         help="Pinned-checks policy JSON file.")
+    parser.add_argument("--audit-push", default=None, metavar="HEAD_SHA",
+                        help="Push-audit mode: audit a main head instead of "
+                             "a PR (needs --prs).")
+    parser.add_argument("--prs", default=None,
+                        help="Associated-PRs JSON file (list) for "
+                             "--audit-push.")
     parser.add_argument("--binding", default=None,
                         help="Approval/binding JSON file for the C3 gate.")
     parser.add_argument("--seams", default=None,
@@ -332,10 +354,39 @@ def main(argv=None):
     parser.add_argument("--emit-dir", default=None,
                         help="Directory for the per-PR packet file "
                              "(D5; stdout is always emitted too).")
-    parser.add_argument("--agent-name", default="agent-review")
+    parser.add_argument("--agent-name", default="sentinel-gate")
     parser.add_argument("--agent-version", default="0.2.0")
     parser.add_argument("--run-id", default="local")
     args = parser.parse_args(argv)
+
+    if args.audit_push is not None:
+        if not SHA_RE.match(args.audit_push):
+            print("agent_review: error: --audit-push must be 40 lowercase "
+                  "hex", file=sys.stderr)
+            return 2
+        if args.prs is None:
+            print("agent_review: error: --audit-push needs --prs",
+                  file=sys.stderr)
+            return 2
+        prs = load_json(args.prs)
+        if prs is None:
+            print(f"agent_review: error: prs file not found: {args.prs}",
+                  file=sys.stderr)
+            return 2
+        if isinstance(prs, Exception) or not isinstance(prs, list):
+            print("agent_review: error: prs file must be a JSON list",
+                  file=sys.stderr)
+            return 2
+        reasons = audit_main_head(prs)
+        print(json.dumps({"head_sha": args.audit_push, "reasons": reasons,
+                          "clean": reasons == []}, indent=2, sort_keys=True))
+        return 0 if not reasons else 1
+
+    if args.packet is None or args.current_head is None \
+            or args.checks is None or args.policy is None:
+        print("agent_review: error: PR mode needs --packet, --current-head, "
+              "--checks and --policy", file=sys.stderr)
+        return 2
 
     if not SHA_RE.match(args.current_head):
         print("agent_review: error: --current-head must be 40 lowercase hex",
