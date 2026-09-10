@@ -315,12 +315,26 @@ def evaluate(packet, current_head, live_checks, policy, agent_meta,
     return out
 
 
+def emit_slug(repo):
+    """Filename-safe, non-hidden slug for the packet file.
+
+    The workflow uploads ``<emit-dir>/*.json`` with upload-artifact@v4,
+    which excludes hidden files by default and whose glob never matches
+    dot-prefixed names. A raw repo name of ".github" therefore produced a
+    file the upload step could not see (observed as "No files were found
+    with the provided path"); the slug strips the leading dots so the
+    packet stays visible whatever the repo is called.
+    """
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "-", str(repo)).lstrip(".-")
+    return slug or "repo"
+
+
 def emit_packet(doc, emit_dir):
     """Write the packet file; return the filename (raises on tool error)."""
     target = Path(emit_dir)
     target.mkdir(parents=True, exist_ok=True)
     name = "%s-%d-%s.json" % (
-        doc["repo"], doc["number"], doc["head_sha"][:7])
+        emit_slug(doc["repo"]), doc["number"], doc["head_sha"][:7])
     path = target / name
     path.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n",
                     encoding="utf-8")
