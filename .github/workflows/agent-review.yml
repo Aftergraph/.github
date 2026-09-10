@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/.github
-          ref: 73bcc786cb4ebb3f25daf8ae5b438971bddafe49
+          ref: e5d92f1023ff14c9ae3d904dce1102f6eba2d4ac
           path: sentinel-engine
           persist-credentials: false
 
@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/.github
-          ref: 73bcc786cb4ebb3f25daf8ae5b438971bddafe49
+          ref: e5d92f1023ff14c9ae3d904dce1102f6eba2d4ac
           path: sentinel-engine
           persist-credentials: false
 
@@ -129,7 +129,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/.github
-          ref: 73bcc786cb4ebb3f25daf8ae5b438971bddafe49
+          ref: e5d92f1023ff14c9ae3d904dce1102f6eba2d4ac
           path: sentinel-engine
           persist-credentials: false
 
@@ -141,4 +141,4 @@ jobs:
       - name: Run agent_review tests
         shell: bash
         working-directory: sentinel-engine
-        run: python3 -m unittest tests.test_agent_review -v
+        run: python3 -m unittest discover -s tests -v
