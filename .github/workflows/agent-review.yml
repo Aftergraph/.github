@@ -1,6 +1,6 @@
-name: Agent review (slice 2, read-only)
+name: Agent review (slice 3, read-only)
 
-# Slice 2 of the code-review agent. READ-ONLY and COMMENT-ONLY permanently:
+# Slice 3 of the code-review agent. READ-ONLY and COMMENT-ONLY permanently:
 #   - pull_request_target runs on the BASE revision only (checkout pins the
 #     base SHA; the untrusted PR head is never checked out).
 #   - Job permissions are read-only (contents/checks/pull-requests).
@@ -17,6 +17,10 @@ name: Agent review (slice 2, read-only)
 on:
   pull_request_target:
     types: [opened, synchronize, ready_for_review]
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       pr_url:
@@ -33,6 +37,8 @@ permissions:
 jobs:
   review:
     name: review (read-only)
+    # PR/queue events only: push events are handled by push_audit below.
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -49,6 +55,33 @@ jobs:
           pr-url: ${{ github.event.pull_request.html_url || inputs.pr_url }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  push_audit:
+    name: push audit (direct-to-main detection, detective only)
+    # Detective, not preventive: a NON_PR_HEAD finding fails this job
+    # visibly but cannot block a push. Repos without enforceable branch
+    # protection rely on this signal plus human response.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout base (pinned SHA only)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Audit main head for PR provenance
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+            --jq '[.[] | {number, state, merged_at: .merged_at}]' > /tmp/prs.json
+          python3 scripts/agent_review.py --audit-push "${{ github.sha }}" \
+            --prs /tmp/prs.json
 
   selftest:
     name: selftest (agent_review unit tests)

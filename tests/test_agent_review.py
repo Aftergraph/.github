@@ -30,7 +30,7 @@ ACTION = ROOT / "actions" / "agent-review" / "action.yml"
 WORKFLOW = ROOT / ".github" / "workflows" / "agent-review.yml"
 
 # Full per-repo pinned table from agent-review-decisions.md D1.
-# AVC stays [] (no CI): fail closed unless the owner-override label is present.
+# AVC stays [] (no CI): fail closed unless OWNER_OVERRIDE_ACCEPT_RISK is present.
 EXPECTED_PINNED_CHECKS = {
     "trust-gateway": ["test", "gate / integration", "Analyze (javascript)",
                       "CodeQL"],
@@ -46,7 +46,20 @@ EXPECTED_PINNED_CHECKS = {
     "autonomous-venture-company": [],
 }
 
-OVERRIDE_LABEL = "owner-override"
+OVERRIDE_LABEL = "OWNER_OVERRIDE_ACCEPT_RISK"
+
+
+def run_audit(prs_doc, run_id="test-audit-1"):
+    """Run the agent script in --audit-push mode; return (rc, stdout, stderr)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        prs_path = Path(tmp) / "prs.json"
+        prs_path.write_text(json.dumps(prs_doc), encoding="utf-8")
+        cmd = [sys.executable, str(AGENT),
+               "--audit-push", "0" * 40,
+               "--prs", str(prs_path),
+               "--run-id", run_id]
+        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+        return proc.returncode, proc.stdout, proc.stderr
 
 PUSHED_AT = "2026-09-10T08:00:00Z"
 NOW = "2026-09-10T12:00:00Z"
@@ -527,6 +540,74 @@ class CommentOnlyGuardTest(unittest.TestCase):
                             r"pull-requests|issues|statuses|actions)"
                             r"\s*:\s*write\b",
                             "workflow permissions must stay read-only")
+
+
+class T9Slice3WorkflowTest(unittest.TestCase):
+    def test_t9_merge_group_trigger_present(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("merge_group:", workflow)
+
+    def test_t9_push_audit_job_present_and_gated(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        script = (ROOT / "scripts" / "agent_review.py").read_text(
+            encoding="utf-8")
+        self.assertIn("push_audit:", workflow)
+        self.assertIn("--audit-push", workflow)
+        self.assertIn("NON_PR_HEAD", script)
+
+    def test_t9_review_job_skips_push_events(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("github.event_name != 'push'", workflow)
+
+
+class T7OverrideLabelRenameTest(unittest.TestCase):
+    def test_t7_new_label_passes_avc(self):
+        packet = json.loads(AVC_FIXTURE.read_text(encoding="utf-8"))
+        binding = make_binding(labels=["OWNER_OVERRIDE_ACCEPT_RISK"])
+        rc, out, err, _d, _e = run_agent(
+            packet, packet["head_sha"], {"checks": []},
+            binding=binding)
+        self.assertEqual(rc, 0, err)
+        agent = json.loads(out)["agent_review"]
+        self.assertEqual(agent["verdict"], "MERGEABLE")
+        self.assertEqual(agent["reason_codes"], [])
+
+    def test_t7_old_label_no_longer_overrides(self):
+        packet = json.loads(AVC_FIXTURE.read_text(encoding="utf-8"))
+        binding = make_binding(labels=["owner-override"])
+        rc, out, err, _d, _e = run_agent(
+            packet, packet["head_sha"], {"checks": []},
+            binding=binding)
+        self.assertEqual(rc, 0, err)
+        agent = json.loads(out)["agent_review"]
+        self.assertEqual(agent["verdict"], "BLOCKED")
+        self.assertIn("NO_CI_PROTECTION", agent["reason_codes"])
+
+
+class T8PushAuditTest(unittest.TestCase):
+    def test_t8_merged_pr_head_passes(self):
+        rc, out, err = run_audit(
+            [{"number": 1, "state": "closed",
+              "merged_at": "2026-09-10T12:00:00Z"}])
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(json.loads(out)["reasons"], [])
+
+    def test_t8_no_associated_pr_fails(self):
+        rc, out, err = run_audit([])
+        self.assertEqual(rc, 1)
+        self.assertIn("NON_PR_HEAD", json.loads(out)["reasons"])
+
+    def test_t8_closed_unmerged_fails(self):
+        rc, out, err = run_audit(
+            [{"number": 2, "state": "closed", "merged_at": None}])
+        self.assertEqual(rc, 1)
+        self.assertIn("NON_PR_HEAD", json.loads(out)["reasons"])
+
+    def test_t8_open_pr_fails(self):
+        rc, out, err = run_audit(
+            [{"number": 3, "state": "open", "merged_at": None}])
+        self.assertEqual(rc, 1)
+        self.assertIn("NON_PR_HEAD", json.loads(out)["reasons"])
 
 
 if __name__ == "__main__":
