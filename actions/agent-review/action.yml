@@ -39,16 +39,13 @@ runs:
       with:
         python-version: "3.12"
 
-    - name: Install pinned gh CLI
+    - name: Install pinned gh CLI (rootless)
       shell: bash
       env:
         GH_VERSION: "2.46.0"
       run: |
         set -euo pipefail
-        curl -fsSL -o /tmp/gh.deb \
-          "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.deb"
-        sudo dpkg -i /tmp/gh.deb
-        gh --version
+        bash "${{ github.action_path }}/../../scripts/install_pinned_gh.sh"
 
     - name: Collect PR data (read-only API)
       shell: bash

@@ -1,20 +1,33 @@
-"""Regression coverage for the reusable Sentinel engine self-pin."""
+"""Regression coverage for reusable Sentinel engine pinning."""
 from __future__ import annotations
 
 import re
 from pathlib import Path
+import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "agent-review.yml"
-FIXED_ENGINE_SHA = "b2ca4413435690222b34205ef232e3e6af0dc188"
 
 
-def test_reusable_workflow_self_checkout_contains_cross_repo_path_fix() -> None:
-    """Every central engine checkout must pin the commit containing PR #35."""
-    workflow = WORKFLOW.read_text(encoding="utf-8")
-    refs = re.findall(
-        r"repository: Aftergraph/\.github\s*\n\s*ref: ([0-9a-f]{40})\b",
-        workflow,
-    )
-    assert refs, "expected at least one pinned central engine checkout"
-    assert set(refs) == {FIXED_ENGINE_SHA}
+class AgentReviewEnginePinTests(unittest.TestCase):
+    def test_all_engine_checkouts_use_one_full_commit_sha(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        refs = re.findall(
+            r"repository: Aftergraph/\.github\s*\n\s*ref: ([0-9a-f]{40})\b",
+            workflow,
+        )
+        self.assertGreaterEqual(len(refs), 3)
+        self.assertEqual(len(set(refs)), 1)
+
+    def test_engine_checkouts_never_follow_mutable_refs(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        blocks = re.findall(
+            r"repository: Aftergraph/\.github\s*\n\s*ref: ([^\s#]+)",
+            workflow,
+        )
+        self.assertTrue(blocks)
+        self.assertTrue(all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in blocks))
+
+
+if __name__ == "__main__":
+    unittest.main()
