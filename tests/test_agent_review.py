@@ -139,12 +139,13 @@ def run_agent_v1(packet_doc, current_head, checks_doc, run_id="test-run-1"):
 
 
 def make_binding(pushed_at=PUSHED_AT, reviews=(), unresolved=0,
-                 codeowners=True, labels=()):
+                 codeowners=True, codeowners_independent_possible=True, labels=()):
     return {
         "head_commit_pushed_at": pushed_at,
         "reviews": list(reviews),
         "unresolved_conversations": unresolved,
         "codeowners_matched": codeowners,
+        "codeowners_independent_possible": codeowners_independent_possible,
         "labels": list(labels),
     }
 
@@ -330,6 +331,20 @@ class C3ApprovalBindingTest(unittest.TestCase):
         agent = json.loads(out)["agent_review"]
         self.assertEqual(agent["verdict"], "BLOCKED")
         self.assertIn("CODEOWNERS_UNMATCHED", agent["reason_codes"])
+
+    def test_t4_sole_author_codeowner_does_not_manufacture_blocker(self):
+        packet = load_fixture()
+        binding = make_binding(
+            codeowners=False,
+            codeowners_independent_possible=False,
+        )
+        rc, out, err, _d, _e = run_agent(
+            packet, packet["head_sha"], self._green(packet),
+            binding=binding)
+        self.assertEqual(rc, 0, err)
+        agent = json.loads(out)["agent_review"]
+        self.assertEqual(agent["verdict"], "MERGEABLE")
+        self.assertNotIn("CODEOWNERS_UNMATCHED", agent["reason_codes"])
 
     def test_t4_approval_with_unknown_push_time_blocked(self):
         packet = load_fixture()
@@ -567,6 +582,14 @@ class FixtureReplayTest(unittest.TestCase):
         agent = json.loads(out)["agent_review"]
         self.assertEqual(agent["verdict"], "BLOCKED")
         self.assertIn("NO_CI_PROTECTION", agent["reason_codes"])
+
+
+class C3ActionBindingCollectionTest(unittest.TestCase):
+    def test_collector_records_when_independent_codeowner_review_is_impossible(self):
+        action = ACTION.read_text(encoding="utf-8")
+        self.assertIn("codeowners_independent_possible", action)
+        self.assertIn("pr_author", action)
+        self.assertIn("matching_owners", action)
 
 
 class CommentOnlyGuardTest(unittest.TestCase):

@@ -15,8 +15,11 @@ Implements:
   C3 approval/binding (--binding JSON, optional): push-after-review
      invalidates verdict (an APPROVED review submitted before the head commit
      was pushed => PUSH_AFTER_REVIEW); unresolved review conversations =>
-     UNRESOLVED_CONVERSATIONS; CODEOWNERS not matched =>
-     CODEOWNERS_UNMATCHED; approvals that cannot be bound to a push time =>
+     UNRESOLVED_CONVERSATIONS; CODEOWNERS not matched while an independent
+     code owner is possible => CODEOWNERS_UNMATCHED. When every matching
+     CODEOWNERS principal is the PR author, the collector records that an
+     independent code-owner review is impossible instead of manufacturing an
+     approval. Approvals that cannot be bound to a push time =>
      REVIEW_BINDING_UNKNOWN. Any of these => verdict BLOCKED. Absent
      binding file => C3 skipped (the scheduled workflow always provides it).
   C4 seam checks (--seams JSON + --seam-rules policy): every cited ledger ID
@@ -140,7 +143,9 @@ def check_binding(binding):
     unresolved = binding.get("unresolved_conversations", 0)
     if not isinstance(unresolved, int) or unresolved > 0:
         reasons.append("UNRESOLVED_CONVERSATIONS")
-    if binding.get("codeowners_matched") is not True:
+    independent_codeowner_possible = binding.get(
+        "codeowners_independent_possible", True)
+    if independent_codeowner_possible is not False and binding.get("codeowners_matched") is not True:
         reasons.append("CODEOWNERS_UNMATCHED")
     reviews = binding.get("reviews", [])
     if not isinstance(reviews, list):
