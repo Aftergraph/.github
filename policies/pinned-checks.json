@@ -38,6 +38,9 @@
     "model-registry": [
       "validate"
     ],
+    ".github": [
+      "selftest (agent_review unit tests)"
+    ],
     "autonomous-venture-company": []
   }
 }

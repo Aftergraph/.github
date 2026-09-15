@@ -52,6 +52,7 @@ permissions:
 jobs:
   review:
     name: review (read-only)
+    needs: selftest
     # PR/queue events only: push events are handled by push_audit below.
     if: github.event_name != 'push'
     runs-on: ${{ fromJSON(inputs.runner_labels || '["ubuntu-latest"]') }}
