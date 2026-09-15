@@ -19,6 +19,12 @@ packets. It posts nothing: no comments, no approvals, no statuses.
 - `BLOCKED` + reason codes: `DELTA_MISMATCH`, `PINNED_CHECK_*`,
   `NO_CI_PROTECTION`, `PUSH_AFTER_REVIEW`, `UNRESOLVED_CONVERSATIONS`,
   `CODEOWNERS_UNMATCHED`, `SEAM_*`, `NON_PR_HEAD` (push audit only).
+  `CODEOWNERS_UNMATCHED` is emitted only when an independent code-owner
+  review is actually possible. If every matching CODEOWNERS principal for
+  every changed path is the PR author, the binding records
+  `codeowners_independent_possible=false`; the gate does not invent a bot or
+  self-approval merely to satisfy an impossible topology. Missing/ambiguous
+  ownership remains fail-closed and still requires CODEOWNERS binding.
 - Any ERROR/UNKNOWN fails closed to BLOCKED. Exit 0 on packet emit,
   1 on audit finding, 2 on tool errors.
 

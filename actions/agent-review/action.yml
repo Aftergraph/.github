@@ -100,6 +100,7 @@ runs:
         except subprocess.CalledProcessError:
             owners_text = ""
         patterns = []
+        owner_rules = []
         for line in owners_text.splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
@@ -107,6 +108,7 @@ runs:
             parts = line.split()
             if len(parts) >= 2:
                 patterns.append(parts[0])
+                owner_rules.append((parts[0], parts[1:]))
 
         def owner_covers(pattern, path):
             pat = pattern[1:] if pattern.startswith("/") else pattern
@@ -128,6 +130,21 @@ runs:
             and all(any(owner_covers(pat, path) for pat in patterns)
                     for path in changed))
 
+        pr_author = str((pr.get("user") or {}).get("login") or "").strip().lower()
+        author_token = f"@{pr_author}" if pr_author else ""
+
+        def matching_owners(path):
+            return {owner for pat, owners in owner_rules if owner_covers(pat, path)
+                    for owner in owners}
+
+        codeowners_independent_possible = True
+        if owner_rules and changed and author_token:
+            owner_sets = [matching_owners(path) for path in changed]
+            if (all(owner_sets) and
+                    all(all(str(owner).lower() == author_token for owner in owners)
+                        for owners in owner_sets)):
+                codeowners_independent_possible = False
+
         binding = {
             "head_commit_pushed_at": pushed_at,
             "reviews": [{"author": (r.get("user") or {}).get("login"),
@@ -136,6 +153,7 @@ runs:
                         for r in reviews],
             "unresolved_conversations": unresolved,
             "codeowners_matched": codeowners_matched,
+            "codeowners_independent_possible": codeowners_independent_possible,
             "labels": [l["name"] for l in pr.get("labels", [])],
         }
         with open("/tmp/agent_review_binding.json", "w", encoding="utf-8") as f:
