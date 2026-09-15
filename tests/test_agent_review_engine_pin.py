@@ -10,6 +10,17 @@ WORKFLOW = ROOT / ".github" / "workflows" / "agent-review.yml"
 
 
 class AgentReviewEnginePinTests(unittest.TestCase):
+    EXPECTED_ENGINE_SHA = "0f4586cb1fcce2aefdbbb2723a770f3b831f0f98"
+
+    def test_engine_checkouts_pin_current_reviewed_engine(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        refs = re.findall(
+            r"repository: Aftergraph/\.github\s*\n\s*ref: ([0-9a-f]{40})\b",
+            workflow,
+        )
+        self.assertTrue(refs)
+        self.assertEqual(set(refs), {self.EXPECTED_ENGINE_SHA})
+
     def test_all_engine_checkouts_use_one_full_commit_sha(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         refs = re.findall(
