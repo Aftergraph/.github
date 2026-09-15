@@ -44,6 +44,7 @@ EXPECTED_PINNED_CHECKS = {
                    "production-container-smoke", "CodeQL"],
     "runtime": ["build-test"],
     "model-registry": ["validate"],
+    ".github": ["selftest (agent_review unit tests)"],
     "autonomous-venture-company": [],
 }
 
@@ -678,6 +679,11 @@ class T9Slice3WorkflowTest(unittest.TestCase):
     def test_t9_review_job_skips_push_events(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("github.event_name != 'push'", workflow)
+
+    def test_t9_review_waits_for_selftest_before_packet_collection(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        review_block = workflow.split('  review:', 1)[1].split('  push_audit:', 1)[0]
+        self.assertIn('needs: selftest', review_block)
 
     def test_t9_audit_retries_before_failing(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
