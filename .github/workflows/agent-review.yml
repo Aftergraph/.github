@@ -66,7 +66,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/.github
-          ref: e5d92f1023ff14c9ae3d904dce1102f6eba2d4ac
+          ref: 0f4586cb1fcce2aefdbbb2723a770f3b831f0f98
           path: sentinel-engine
           persist-credentials: false
 
@@ -95,7 +95,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/.github
-          ref: e5d92f1023ff14c9ae3d904dce1102f6eba2d4ac
+          ref: 0f4586cb1fcce2aefdbbb2723a770f3b831f0f98
           path: sentinel-engine
           persist-credentials: false
 
@@ -130,7 +130,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: Aftergraph/.github
-          ref: e5d92f1023ff14c9ae3d904dce1102f6eba2d4ac
+          ref: 0f4586cb1fcce2aefdbbb2723a770f3b831f0f98
           path: sentinel-engine
           persist-credentials: false
 
