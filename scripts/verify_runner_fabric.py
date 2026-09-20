@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "execution" / "runner-fabric-v1.json"
 POLYREPO = ROOT / ".github" / "workflows" / "polyrepo-integration-gate.yml"
+DOCTOR = ROOT / "scripts" / "doctor_runner_fabric_linux.sh"
 
 def verify() -> list[str]:
     errors: list[str] = []
@@ -51,6 +52,17 @@ def verify() -> list[str]:
         errors.append("bootstrap policy must not claim org-visible self-hosted capacity before activation evidence")
     if rollout.get("default_central_runner") != "ubuntu-latest":
         errors.append("bootstrap central runner must remain known-good until activation")
+
+    doctor = DOCTOR.read_text(encoding="utf-8")
+    doctor_required = [
+        "AFTERGRAPH_RUNNER_VERIFY_GITHUB",
+        "/orgs/Aftergraph/actions/runners",
+        "GITHUB_ORG_VISIBLE_READY=",
+        "RUNNER_FABRIC_DOCTOR=PASS",
+    ]
+    for marker in doctor_required:
+        if marker not in doctor:
+            errors.append(f"runner doctor missing: {marker}")
 
     forbidden = [
         "cancel-in-progress: true",
