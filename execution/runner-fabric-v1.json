@@ -12,7 +12,12 @@
   "queue": {
     "coalesce_key": "repository:pull_request",
     "desired_behavior": "latest_exact_sha_wins_before_execution",
-    "priorities": ["hotfix", "promotion", "normal", "scheduled"],
+    "priorities": [
+      "hotfix",
+      "promotion",
+      "normal",
+      "scheduled"
+    ],
     "infrastructure_unavailable": "neutral_or_pending_not_code_failure",
     "code_failure": "failure",
     "obsolete_sha": "stale_without_success_claim"
@@ -20,21 +25,36 @@
   "pools": [
     {
       "id": "aftergraph-ci",
-      "labels": ["self-hosted", "Linux", "X64", "aftergraph-ci"],
+      "labels": [
+        "self-hosted",
+        "Linux",
+        "X64",
+        "aftergraph-ci"
+      ],
       "purpose": "shared fast and normal verification",
       "target_queue_p95_seconds": 15,
-      "target_warm_runners": 2
+      "target_warm_runners": 2,
+      "status": "desired_not_yet_proven_org_visible"
     },
     {
       "id": "aftergraph-proof",
-      "labels": ["self-hosted", "Linux", "X64", "aftergraph-proof"],
+      "labels": [
+        "self-hosted",
+        "Linux",
+        "X64",
+        "aftergraph-proof"
+      ],
       "purpose": "promotion, cross-repo and long-running proofs",
       "target_queue_p95_seconds": 30,
       "target_warm_runners": 1
     },
     {
       "id": "aftergraph-controlled-windows",
-      "labels": ["self-hosted", "Windows", "X64"],
+      "labels": [
+        "self-hosted",
+        "Windows",
+        "X64"
+      ],
       "purpose": "Windows-only controlled-host verification",
       "target_queue_p95_seconds": 30,
       "target_warm_runners": 1
@@ -62,5 +82,16 @@
     "fast_gate_p95_seconds": 120,
     "duplicate_heavy_proofs_per_sha": 0,
     "false_red_infrastructure_failures": 0
+  },
+  "rollout": {
+    "phase": "bootstrap",
+    "organization_visible_self_hosted_pool_proven": false,
+    "activation_evidence_required": [
+      "doctor:RUNNER_FABRIC_READY",
+      "successful job in Aftergraph/.github using runner_label=aftergraph-ci",
+      "recorded exact runner names and labels"
+    ],
+    "default_central_runner": "ubuntu-latest",
+    "desired_self_hosted_runner": "aftergraph-ci"
   }
 }
