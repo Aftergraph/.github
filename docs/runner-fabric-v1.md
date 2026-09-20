@@ -59,9 +59,7 @@ GitHub Actions' `cancel-in-progress` is not the canonical dedupe mechanism becau
 
 ## Pools
 
-The common Linux contract is:
-
-`[self-hosted, Linux, X64, aftergraph-ci]`
+The desired common Linux pool selector is `aftergraph-ci` (with standard self-hosted/Linux/X64 labels on the registered runners). **It is not considered active organization-wide until the activation doctor and an actual `.github` job prove organization visibility.**
 
 Repo-specific labels should be used only when the job truly requires host-specific state. Clean-room jobs should target the shared pool so additional compatible runners increase throughput automatically.
 
@@ -100,3 +98,19 @@ The performance multipliers are objectives, not measured claims. The main levers
 - multiple warm runners or a runner scale set when measured queue pressure justifies it.
 
 GitHub documents runner scale sets as the native autoscaling model through Actions Runner Controller. Adoption remains an infrastructure deployment choice, not a requirement of this v1 policy.
+
+
+## Bootstrap-to-active transition
+
+The fabric starts in `bootstrap` phase. Central control-plane selftests stay on
+a known-good GitHub-hosted bootstrap runner so they cannot deadlock while the
+organization pool is being created.
+
+Activation of `aftergraph-ci` requires all three:
+
+1. `doctor_runner_fabric_linux.sh` reports the configured warm count ready;
+2. an `Aftergraph/.github` job actually runs on the `aftergraph-ci` selector;
+3. exact runner names/labels are recorded as activation evidence.
+
+Only then should `organization_visible_self_hosted_pool_proven` be changed to
+`true` and central callers select `aftergraph-ci`.
