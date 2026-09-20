@@ -34,6 +34,14 @@ on:
         required: false
         type: string
         default: 'main'
+      runner_label:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+        description: >-
+          Runner selector. Keep ubuntu-latest until an organization-visible
+          Aftergraph runner pool has passed the runner-fabric doctor; then use
+          aftergraph-ci for the reviewed caller.
 
 permissions:
   contents: read
@@ -45,7 +53,7 @@ concurrency:
 jobs:
   integration:
     name: integration
-    runs-on: [self-hosted, Linux, X64, aftergraph-ci]
+    runs-on: ${{ inputs.runner_label }}
     timeout-minutes: 30
     env:
       PIP_DISABLE_PIP_VERSION_CHECK: '1'
