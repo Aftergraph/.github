@@ -20,6 +20,11 @@ def verify() -> list[str]:
         errors.append("latest-SHA coalescing policy missing")
     if queue.get("infrastructure_unavailable") != "neutral_or_pending_not_code_failure":
         errors.append("infrastructure/code-failure separation missing")
+    freshness = queue.get("mid_run_freshness", {})
+    if freshness.get("required_for_long_running_pr_jobs") is not True:
+        errors.append("mid-run freshness invariant missing")
+    if freshness.get("obsolete_head_behavior") != "neutral_skip_remaining_expensive_work":
+        errors.append("obsolete-head neutral skip policy missing")
 
     execution = policy.get("execution", {})
     if execution.get("one_runner_acquisition_per_gate") is not True:
