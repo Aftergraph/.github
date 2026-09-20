@@ -20,7 +20,16 @@
     ],
     "infrastructure_unavailable": "neutral_or_pending_not_code_failure",
     "code_failure": "failure",
-    "obsolete_sha": "stale_without_success_claim"
+    "obsolete_sha": "stale_without_success_claim",
+    "mid_run_freshness": {
+      "required_for_long_running_pr_jobs": true,
+      "checkpoints": [
+        "before_dependency_install",
+        "before_primary_test_or_build"
+      ],
+      "obsolete_head_behavior": "neutral_skip_remaining_expensive_work",
+      "authority_note": "freshness is scheduling evidence, never authorization"
+    }
   },
   "pools": [
     {
