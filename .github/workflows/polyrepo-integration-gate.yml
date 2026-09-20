@@ -1,125 +1,139 @@
 name: Polyrepo Integration Gate
 
-# Shared cross-repo integration gate for the Aftergraph core.
-#
-# Purpose: materialize the sibling repos + governance contracts that a repo's
-# integration/conformance tests actually require, then run that repo's REAL
-# existing test suite against the materialized workspace.
-#
-# Design rules (aftergraph governance review, 2026-09-05):
-#   - No artifact upload/download. Artifact quota is a known blocker; contracts
-#     are checked out directly into the workspace instead.
-#   - All repos are PUBLIC, so cross-repo checkout works with GITHUB_TOKEN.
-#   - Single job: GITHUB_WORKSPACE is per-job, so the sibling-layout contract
-#     (repos as siblings under the workspace root) only holds inside one job.
-#   - Per-repo test commands are the repos' ACTUAL existing CI commands, not
-#     invented matrix fields. Local unit workflows stay untouched; this gate is
-#     additive.
-#   - WIV2 lint is a real gate: no continue-on-error. Lint findings stay visible.
-#   - Stable job name 'integration' => stable check name for a later required
-#     status. No branch protection is activated until this gate is green.
-#
-# Workspace contract (checked out as siblings under $GITHUB_WORKSPACE):
-#   after-graph-governance/   <- canonical contract source
-#   aie/
-#   trust-gateway/
-#   works-execution/
-#   work-intelligence-v2/
-#   intelligence-systems-research/
-# Env vars exposed to the suite:
-#   AFTERGRAPH_ROOT, GOVERNANCE_ROOT, GOVERNANCE_CONTRACTS_PATH, GOVERNANCE_DIR,
-#   AIE_RUNTIME_PATH, AIE_ROOT, WORKS_ROOT, TG_ROOT, WIV2_ROOT, ISR_ROOT
-
 on:
   workflow_call:
     inputs:
       target_repo:
         required: true
         type: string
-        description: Repo whose integration suite runs (e.g. trust-gateway).
       target_ref:
         required: false
         type: string
         default: 'main'
-        description: Ref of target_repo to test. Default main.
       siblings:
         required: false
         type: string
         default: ''
-        description: >-
-          Space-separated sibling repos to materialize from the core set:
-          after-graph-governance aie works-execution work-intelligence-v2
-          intelligence-systems-research. Only repos actually needed by the
-          target's integration tests should be listed.
+      governance_ref:
+        required: false
+        type: string
+        default: 'main'
+      aie_ref:
+        required: false
+        type: string
+        default: 'main'
+      works_ref:
+        required: false
+        type: string
+        default: 'main'
       wiv2_ref:
         required: false
         type: string
         default: 'main'
-        description: >
-          Ref for work-intelligence-v2. WIV2 default branch was renamed
-          master->main (2026-09-05).
+      isr_ref:
+        required: false
+        type: string
+        default: 'main'
 
 permissions:
   contents: read
 
+concurrency:
+  group: polyrepo-${{ inputs.target_repo }}-${{ inputs.target_ref }}
+  cancel-in-progress: false
+
 jobs:
   integration:
     name: integration
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, aftergraph-ci]
     timeout-minutes: 30
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      NPM_CONFIG_FUND: 'false'
+      NPM_CONFIG_AUDIT: 'false'
     steps:
-      # ---- Materialize target repo (sibling path, same as everything else) ----
       - name: Checkout target (${{ inputs.target_repo }})
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v7
         with:
           repository: Aftergraph/${{ inputs.target_repo }}
           ref: ${{ inputs.target_ref }}
           path: ${{ inputs.target_repo }}
+          persist-credentials: false
+          clean: true
 
-      # ---- Materialize governance contracts (canonical source) ----
       - name: Checkout after-graph-governance
         if: contains(inputs.siblings, 'after-graph-governance')
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v7
         with:
           repository: Aftergraph/after-graph-governance
-          ref: main
+          ref: ${{ inputs.governance_ref }}
           path: after-graph-governance
+          persist-credentials: false
+          clean: true
 
-      - name: Checkout aie
+      - name: Checkout AIE
         if: contains(inputs.siblings, 'aie')
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v7
         with:
           repository: Aftergraph/aie
-          ref: main
+          ref: ${{ inputs.aie_ref }}
           path: aie
+          persist-credentials: false
+          clean: true
 
-      - name: Checkout works-execution
+      - name: Checkout WORKS
         if: contains(inputs.siblings, 'works-execution')
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v7
         with:
           repository: Aftergraph/works-execution
-          ref: main
+          ref: ${{ inputs.works_ref }}
           path: works-execution
+          persist-credentials: false
+          clean: true
 
       - name: Checkout work-intelligence-v2
         if: contains(inputs.siblings, 'work-intelligence-v2')
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v7
         with:
           repository: Aftergraph/work-intelligence-v2
           ref: ${{ inputs.wiv2_ref }}
           path: work-intelligence-v2
+          persist-credentials: false
+          clean: true
 
       - name: Checkout intelligence-systems-research
         if: contains(inputs.siblings, 'intelligence-systems-research')
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v7
         with:
           repository: Aftergraph/intelligence-systems-research
-          ref: main
+          ref: ${{ inputs.isr_ref }}
           path: intelligence-systems-research
+          persist-credentials: false
+          clean: true
 
-      # ---- Workspace contract env vars ----
+      - name: Provision Node 24
+        if: inputs.target_repo == 'trust-gateway'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Provision Python 3.12
+        if: inputs.target_repo == 'aie' || inputs.target_repo == 'work-intelligence-v2' || inputs.target_repo == 'intelligence-systems-research'
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Provision Go
+        if: inputs.target_repo == 'works-execution'
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: works-execution/go.mod
+          cache: false
+
       - name: Set workspace contract env
+        shell: bash
         run: |
+          set -euo pipefail
           echo "AFTERGRAPH_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
           echo "GOVERNANCE_ROOT=$GITHUB_WORKSPACE/after-graph-governance" >> "$GITHUB_ENV"
           echo "GOVERNANCE_CONTRACTS_PATH=$GITHUB_WORKSPACE/after-graph-governance/docs/contracts/frozen" >> "$GITHUB_ENV"
@@ -131,10 +145,9 @@ jobs:
           echo "WIV2_ROOT=$GITHUB_WORKSPACE/work-intelligence-v2" >> "$GITHUB_ENV"
           echo "ISR_ROOT=$GITHUB_WORKSPACE/intelligence-systems-research" >> "$GITHUB_ENV"
 
-      # ---- Assert contracts are deterministically present ----
-      # Fail loudly if the exact schemas the suites resolve are missing.
-      # This is what converts "missing sibling repo" into a real signal.
       - name: Assert governance contracts present
+        if: contains(inputs.siblings, 'after-graph-governance')
+        shell: bash
         run: |
           set -euo pipefail
           test -d "$GOVERNANCE_ROOT"
@@ -143,9 +156,7 @@ jobs:
           test -f "$GOVERNANCE_CONTRACTS_PATH/evidence.schema.schema.json"
           test -f "$GOVERNANCE_CONTRACTS_PATH/kernel.budget.schema.json"
           test -f "$GOVERNANCE_ROOT/docs/contracts/mission-state/1.0.json"
-          echo "PASS: governance contracts materialized at $GOVERNANCE_CONTRACTS_PATH"
 
-      # ---- Run the target's real existing suite against the workspace ----
       - name: Run integration suite (${{ inputs.target_repo }})
         shell: bash
         env:
@@ -155,38 +166,30 @@ jobs:
           cd "$GITHUB_WORKSPACE/$TARGET_REPO"
           case "$TARGET_REPO" in
             trust-gateway)
-              # Real TG command: node --test tests/*.test.js (node 24)
+              npm ci --no-audit --no-fund
               npm test
               ;;
             aie)
-              # Real AIE command (ci.yml): pip install -e '.[dev,otel]' + pytest
-              python -m pip install --upgrade pip
               python -m pip install -e '.[dev,otel]'
               python -m compileall -q src interop/s1
-              pytest -q
+              python -m pytest -q
               ;;
             work-intelligence-v2)
-              # Real WIV2 command (ci.yml): ruff check then pytest. Lint is a hard gate.
-              python -m pip install --upgrade pip
-              pip install -e ".[dev]"
-              pip install ruff
+              python -m pip install -e ".[dev]"
+              python -m pip install ruff
               ruff check src/ tests/
-              pytest --tb=short -q
+              python -m pytest --tb=short -q
               ;;
             works-execution)
-              # Real WORKS command (ci.yml): go build + vet + test
+              go mod download
               go build ./...
               go vet ./...
               go test ./... -count=1
               ;;
             intelligence-systems-research)
-              # Real ISR intent (ci.yml python-tests): pytest. ISR has NO
-              # requirements files, so bootstrap is explicit and deterministic.
-              python -m pip install --upgrade pip
-              pip install pytest httpx
-              # Install AIE runtime for cross-repo mission-state conformance tests
+              python -m pip install pytest httpx
               if [ -d "$GITHUB_WORKSPACE/aie" ]; then
-                pip install -e "$GITHUB_WORKSPACE/aie"
+                python -m pip install -e "$GITHUB_WORKSPACE/aie"
               fi
               python -m pytest -v --tb=short
               ;;
@@ -195,3 +198,18 @@ jobs:
               exit 1
               ;;
           esac
+
+      - name: Exact-head receipt
+        shell: bash
+        env:
+          TARGET_REPO: ${{ inputs.target_repo }}
+        run: |
+          set -euo pipefail
+          EXACT_HEAD="$(git -C "$GITHUB_WORKSPACE/$TARGET_REPO" rev-parse HEAD)"
+          printf 'EXACT_HEAD=%s\n' "$EXACT_HEAD"
+          printf 'TARGET_REPO=%s\n' "$TARGET_REPO"
+          for repo in after-graph-governance aie works-execution work-intelligence-v2 intelligence-systems-research; do
+            if [ -d "$GITHUB_WORKSPACE/$repo/.git" ]; then
+              printf '%s=%s\n' "$(echo "$repo" | tr '[:lower:]-' '[:upper:]_')" "$(git -C "$GITHUB_WORKSPACE/$repo" rev-parse HEAD)"
+            fi
+          done
