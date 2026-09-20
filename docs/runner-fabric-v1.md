@@ -114,3 +114,21 @@ Activation of `aftergraph-ci` requires all three:
 
 Only then should `organization_visible_self_hosted_pool_proven` be changed to
 `true` and central callers select `aftergraph-ci`.
+
+
+## Queue telemetry
+
+Use the repository-native metrics sensor to measure rather than infer capacity:
+
+```bash
+python scripts/runner_fabric_metrics.py --limit 20
+python scripts/runner_fabric_metrics.py --limit 50 --json > runner-fabric-metrics.json
+```
+
+The sensor reads GitHub run/job metadata through the authenticated `gh` CLI and
+reports queue p50/p95, job-runtime p95, cancellation rate, observed runner names
+and a bounded capacity signal. Metrics are observations, not verification
+authority; they may recommend capacity but cannot mark code green.
+
+Capacity changes should be justified by repeated p95 pressure, not a single
+outlier.
