@@ -28,7 +28,9 @@ def verify() -> list[str]:
 
     workflow = POLYREPO.read_text(encoding="utf-8")
     required = [
-        "runs-on: [self-hosted, Linux, X64, aftergraph-ci]",
+        "runner_label:",
+        "runs-on: ${{ inputs.runner_label }}",
+        "default: 'ubuntu-latest'",
         "actions/checkout@v7",
         "actions/setup-node@v7",
         "actions/setup-python@v7",
@@ -44,8 +46,13 @@ def verify() -> list[str]:
         if marker not in workflow:
             errors.append(f"polyrepo workflow missing: {marker}")
 
+    rollout = policy.get("rollout", {})
+    if rollout.get("organization_visible_self_hosted_pool_proven") is not False:
+        errors.append("bootstrap policy must not claim org-visible self-hosted capacity before activation evidence")
+    if rollout.get("default_central_runner") != "ubuntu-latest":
+        errors.append("bootstrap central runner must remain known-good until activation")
+
     forbidden = [
-        "runs-on: ubuntu-latest",
         "cancel-in-progress: true",
     ]
     for marker in forbidden:
