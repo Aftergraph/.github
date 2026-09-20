@@ -27,4 +27,33 @@ for i in $(seq 1 "$EXPECTED"); do
 done
 
 printf 'RUNNER_FABRIC_READY=%s/%s\n' "$ok" "$EXPECTED"
-[[ "$ok" -eq "$EXPECTED" ]]
+[[ "$ok" -eq "$EXPECTED" ]] || exit 1
+
+if [[ "${AFTERGRAPH_RUNNER_VERIFY_GITHUB:-0}" == "1" ]]; then
+  command -v gh >/dev/null 2>&1 || { echo "gh CLI required for GitHub visibility verification" >&2; exit 2; }
+  : "${GH_TOKEN:?GH_TOKEN with organization runner read permission is required}"
+
+  prefix="${AFTERGRAPH_RUNNER_NAME_PREFIX:-aftergraph-ci}"
+  required_label="${AFTERGRAPH_RUNNER_REQUIRED_LABEL:-aftergraph-ci}"
+
+  inventory="$(gh api --paginate /orgs/Aftergraph/actions/runners \
+    --jq '.runners[] | [.name, .status, (.busy|tostring), (.labels|map(.name)|join(","))] | @tsv')"
+
+  visible=0
+  while IFS=
+\t' read -r name status busy labels; do
+    [[ -n "$name" ]] || continue
+    if [[ "$name" == "$prefix-"* && "$status" == "online" && ",$labels," == *",$required_label,"* ]]; then
+      visible=$((visible+1))
+      printf 'ORG_VISIBLE name=%s status=%s busy=%s labels=%s\n' "$name" "$status" "$busy" "$labels"
+    fi
+  done <<<"$inventory"
+
+  printf 'GITHUB_ORG_VISIBLE_READY=%s/%s\n' "$visible" "$EXPECTED"
+  [[ "$visible" -ge "$EXPECTED" ]] || {
+    echo "organization-visible capacity is below expected warm count" >&2
+    exit 1
+  }
+fi
+
+echo "RUNNER_FABRIC_DOCTOR=PASS"
