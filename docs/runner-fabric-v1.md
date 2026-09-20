@@ -132,3 +132,18 @@ authority; they may recommend capacity but cannot mark code green.
 
 Capacity changes should be justified by repeated p95 pressure, not a single
 outlier.
+
+
+## Organization workflow audit
+
+The audit sensor catches default-branch regressions that recreate false-red
+cancellation churn or legacy action runtimes:
+
+```bash
+python scripts/audit_runner_policy.py --fail-on-error
+python scripts/audit_runner_policy.py --org Aftergraph --json
+```
+
+The local mode is suitable for a merge gate. Organization mode is an operator
+sensor: it needs an authenticated `gh` session and reports other repositories;
+it does not mutate them.

@@ -57,4 +57,4 @@ jobs:
 
       - name: Unit test runner fabric verifier and metrics
         if: steps.readiness.outputs.ready == 'true'
-        run: python -m unittest tests.test_runner_fabric tests.test_runner_fabric_metrics -v
+        run: python -m unittest tests.test_runner_fabric tests.test_runner_fabric_metrics tests.test_runner_policy_audit -v
