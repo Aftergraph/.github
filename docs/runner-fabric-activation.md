@@ -42,9 +42,19 @@ Optional:
 
 ```bash
 sudo AFTERGRAPH_RUNNER_COUNT=2 bash scripts/doctor_runner_fabric_linux.sh
+
+# Activation proof: requires an org-level GitHub token with runner read access.
+sudo -E \
+  GH_TOKEN='<short-lived-or-bounded-admin-token>' \
+  AFTERGRAPH_RUNNER_COUNT=2 \
+  AFTERGRAPH_RUNNER_VERIFY_GITHUB=1 \
+  bash scripts/doctor_runner_fabric_linux.sh
 ```
 
-The command must report `RUNNER_FABRIC_READY=2/2` before the host is counted as warm capacity.
+Local readiness alone is not enough. Activation requires both
+`RUNNER_FABRIC_READY=2/2` and `GITHUB_ORG_VISIBLE_READY=2/2`, followed by
+`RUNNER_FABRIC_DOCTOR=PASS`. The doctor prints runner names/status/labels but
+never prints the token.
 
 ## Capacity policy
 
