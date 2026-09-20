@@ -23,6 +23,18 @@ def scan_workflow_text(path: str, text: str) -> list[dict[str, str]]:
             "path": path,
             "message": "checkout@v4 uses the deprecated Node-generation action runtime",
         })
+
+    serialized_pr_patterns = (
+        "github.event.pull_request.number || github.ref",
+        "github.ref }}\n  cancel-in-progress: false",
+    )
+    if "cancel-in-progress: false" in text and any(pattern in text for pattern in serialized_pr_patterns):
+        findings.append({
+            "severity": "error",
+            "code": "cross-sha-serialization",
+            "path": path,
+            "message": "a non-cancelling concurrency group can serialize newer exact heads behind stale work; scope the group to exact SHA or move coalescing into the controller",
+        })
     return findings
 
 def scan_local(root: Path) -> list[dict[str, str]]:

@@ -147,3 +147,12 @@ python scripts/audit_runner_policy.py --org Aftergraph --json
 The local mode is suitable for a merge gate. Organization mode is an operator
 sensor: it needs an authenticated `gh` session and reports other repositories;
 it does not mutate them.
+
+
+### Concurrency regression rule
+
+A workflow with `cancel-in-progress: false` must not use a PR-wide concurrency
+key for exact-head verification. That combination can strand the newest head
+behind an old stuck run. Exact-head gates use SHA-scoped concurrency; true
+latest-wins deduplication belongs in the runner/controller layer where stale
+work can be represented as stale rather than cancelled.
