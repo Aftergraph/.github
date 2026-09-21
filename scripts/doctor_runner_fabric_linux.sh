@@ -17,7 +17,10 @@ for i in $(seq 1 "$EXPECTED"); do
   if [[ -f "$home/.runner" ]]; then
     version="$(grep -o '"runnerId":[0-9]*' "$home/.runner" 2>/dev/null | head -n1 || true)"
   fi
-  service="$("$home/svc.sh" status 2>/dev/null || true)"
+  # svc.sh resolves service metadata relative to the runner root. Calling it
+  # from an arbitrary operator working directory can therefore report a false
+  # NOT_RUNNING for a healthy service.
+  service="$(cd "$home" && ./svc.sh status 2>/dev/null || true)"
   if grep -qiE 'active|running' <<<"$service"; then
     printf 'PASS runner-%s %s\n' "$i" "$version"
     ok=$((ok+1))
@@ -40,8 +43,7 @@ if [[ "${AFTERGRAPH_RUNNER_VERIFY_GITHUB:-0}" == "1" ]]; then
     --jq '.runners[] | [.name, .status, (.busy|tostring), (.labels|map(.name)|join(","))] | @tsv')"
 
   visible=0
-  while IFS=
-\t' read -r name status busy labels; do
+  while IFS=$'\t' read -r name status busy labels; do
     [[ -n "$name" ]] || continue
     if [[ "$name" == "$prefix-"* && "$status" == "online" && ",$labels," == *",$required_label,"* ]]; then
       visible=$((visible+1))
