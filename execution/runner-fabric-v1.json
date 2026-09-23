@@ -102,5 +102,22 @@
     ],
     "default_central_runner": "ubuntu-latest",
     "desired_self_hosted_runner": "aftergraph-ci"
+  },
+  "host_health": {
+    "tmpfs": {
+      "path": "/tmp",
+      "max_used_percent": 85,
+      "min_free_inodes": 10000,
+      "deleted_open_listener_mappings": "observe_and_fail_under_pressure",
+      "unhealthy_behavior": "infrastructure_unavailable_not_code_failure"
+    },
+    "listener_maintenance": {
+      "recycle_only_when_idle": true,
+      "require_no_runner_worker_child": true,
+      "require_pressure": true,
+      "require_deleted_open_mapping": true,
+      "minimum_listener_age_seconds": 3600,
+      "post_restart_readback": true
+    }
   }
 }
