@@ -156,3 +156,56 @@ key for exact-head verification. That combination can strand the newest head
 behind an old stuck run. Exact-head gates use SHA-scoped concurrency; true
 latest-wins deduplication belongs in the runner/controller layer where stale
 work can be represented as stale rather than cancelled.
+
+
+## Host tmpfs health and listener maintenance
+
+The shared Linux runner host must be considered **infrastructure unavailable** when its temporary filesystem cannot safely materialize dependency/test/source state. A full `/tmp` must never be reported as a repository code failure.
+
+The canonical doctor now measures:
+
+- `/tmp` used percent;
+- free KB and free inodes;
+- Runner.Listener count;
+- active Runner.Worker children;
+- readable deleted `memfd:doublemapper` mappings held by listeners.
+
+Default thresholds are:
+
+- maximum `/tmp` used: **85%**;
+- minimum free inodes: **10,000**.
+
+Run:
+
+```bash
+bash scripts/doctor_runner_fabric_linux.sh
+```
+
+A healthy host emits:
+
+```text
+RUNNER_TMPFS_HEALTH=PASS
+RUNNER_FABRIC_DOCTOR=PASS
+```
+
+Pressure emits `RUNNER_TMPFS_HEALTH=FAIL` and exits non-zero. This is infrastructure evidence, not a failed code gate.
+
+### Safe maintenance
+
+The maintenance helper is deliberately narrower than a generic service restarter:
+
+```bash
+bash scripts/maintain_runner_fabric_linux.sh status
+sudo bash scripts/maintain_runner_fabric_linux.sh recycle-idle
+```
+
+`recycle-idle` only runs when tmpfs usage is above the configured threshold. For each listener it also requires:
+
+1. no active `Runner.Worker` child;
+2. listener age at least the configured minimum (default 3600 seconds);
+3. at least one `memfd:doublemapper` mapping;
+4. service metadata bound to that exact runner root.
+
+The helper restarts only the exact systemd unit named by the runner's `.service` metadata, requires a changed listener PID, then re-measures tmpfs pressure. If safe recycling cannot bring the host below threshold, it exits with `RUNNER_FABRIC_MAINTENANCE=BLOCKED`.
+
+Blind `pkill`, `kill -9`, wildcard service restarts and restarting a listener with an active Runner.Worker are outside policy.
