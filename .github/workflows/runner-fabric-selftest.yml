@@ -7,8 +7,11 @@ on:
       - 'execution/runner-fabric-v1.json'
       - 'docs/runner-fabric-v1.md'
       - 'scripts/verify_runner_fabric.py'
+      - 'scripts/doctor_runner_fabric_linux.sh'
+      - 'scripts/maintain_runner_fabric_linux.sh'
       - 'tests/test_runner_fabric.py'
       - 'tests/test_runner_fabric_doctor.py'
+      - 'tests/test_runner_fabric_maintenance.py'
       - '.github/workflows/polyrepo-integration-gate.yml'
       - '.github/workflows/org-wide-suite.yml'
       - '.github/workflows/runner-fabric-selftest.yml'
@@ -62,6 +65,7 @@ jobs:
           python -m unittest
           tests.test_runner_fabric
           tests.test_runner_fabric_doctor
+          tests.test_runner_fabric_maintenance
           tests.test_runner_fabric_metrics
           tests.test_runner_policy_audit
           -v
