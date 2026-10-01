@@ -13,8 +13,8 @@ Adopt the AVC boundary for all of Aftergraph: **GitHub is Git/PR/status transpor
 | Org plan | GitHub Free |
 | Repos (non-archived) | 45: 18 public, 27 private (incl. runtime, relay) |
 | Active workflows | runtime, relay, ISR, aftergraph.org 30 each; works-execution 25; aie 24; sentinel 23; only AVC and sentinel-firetest2 have 0 |
-| AVC bridge | `avc-runner-bridge.service` active on vmi3517816 since 2026-10-01 17:43 CEST, but no `avc/ci-local` status on main commits `6c474b9` or `f66bf22` |
-| Bridge scope | single repo: `src/constants.ts` hardcodes `REPOSITORY = "Aftergraph/autonomous-venture-company"` |
+| AVC bridge | `avc-runner-bridge.service` active on vmi3517816 since 2026-10-01 17:43 CEST. Runs are label-triggered only: `avc-ci:run` on a PR or `avc-ci:main-run` on control issue #759, applied by `JonasAbde`. Main commits `6c474b9` and `f66bf22` have no `avc/ci-local` because nobody triggered them. Latest terminal results: #1051 `avc-ci:error` (2026-09-30), #1038 `avc-ci:error` (2026-09-20) |
+| Bridge scope | single repo: `src/constants.ts` hardcodes `REPOSITORY`, `AUTHORIZED_ACTOR = "JonasAbde"`, the `avc-ci:*` labels and control issue 759 |
 | Self-hosted runners | online: vps-ci-01, vds-aftergraph-ci-relay, vds-aftergraph-ci-runtime; offline: JONAS-LENOVO-runtime-acceptance, lenovo-relay-windows |
 | Observability | CI user `agci` cannot read the bridge journal or `/var/lib/avc-runner-bridge`; relay MCP gateway returns Unauthorized |
 
@@ -53,8 +53,10 @@ Order: low-workflow private repos first (core, concord, skillport, model-registr
 - Public repos: run CodeQL CLI on the host and upload SARIF via the code-scanning API, or keep the CodeQL workflow as observational-only.
 - Private repos: code scanning is not available on Free. Run `osv-scanner` and `semgrep` inside `run-local-ci.sh` and fail the status on high/critical findings.
 
-### 7. Nobody can see why the bridge is silent
-**Solution: readable evidence without root.**
+### 7. Bridge evidence is hard to read and runs need a human trigger
+**Solution: readable evidence without root, and automatic triggering.**
+- Trigger on every PR head and every main push automatically, instead of only when `JonasAbde` applies a label. Keep the label as a manual re-run.
+- Make the authorized actor a list (owner plus the sentinel App) so an agent can trigger without borrowing the owner identity.
 - Create group `aftergraph-ops`; add `agci`. Grant it read on `/var/log/<bridge>` and the ledger (or `systemd-journal` group membership).
 - Bridge writes a sanitized JSON status file (last poll, last claim, last error) readable by that group.
 - Renew the relay MCP gateway bearer so Fo can inspect through the execution gateway.
@@ -68,7 +70,7 @@ Order: low-workflow private repos first (core, concord, skillport, model-registr
 
 ## Fo actions (no owner input needed)
 
-1. Diagnose the silent AVC bridge once (1) is done.
+1. Find out why #1051 and #1038 ended in `avc-ci:error` once (1) is done.
 2. Generalize the bridge (section 2) as a PR in autonomous-venture-company.
 3. Add the post-merge detector and heartbeat check to the daily audit.
 4. Pilot the boundary on one low-workflow private repo.
