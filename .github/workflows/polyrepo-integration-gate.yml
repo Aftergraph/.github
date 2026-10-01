@@ -174,7 +174,12 @@ jobs:
           cd "$GITHUB_WORKSPACE/$TARGET_REPO"
           case "$TARGET_REPO" in
             trust-gateway)
-              npm ci --no-audit --no-fund
+              # trust-gateway does not commit a lockfile; npm ci refuses to run without one.
+              if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+                npm ci --no-audit --no-fund
+              else
+                npm install --no-audit --no-fund
+              fi
               npm test
               ;;
             aie)
@@ -196,6 +201,10 @@ jobs:
               ;;
             intelligence-systems-research)
               python -m pip install pytest httpx
+              # Repo-declared test deps (e.g. PyJWT for the token-exchange tests).
+              if [ -f requirements-test.txt ]; then
+                python -m pip install -r requirements-test.txt
+              fi
               if [ -d "$GITHUB_WORKSPACE/aie" ]; then
                 python -m pip install -e "$GITHUB_WORKSPACE/aie"
               fi
