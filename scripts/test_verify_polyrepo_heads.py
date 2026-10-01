@@ -30,6 +30,23 @@ class ManifestTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("6 repositories", result.stdout)
 
+    def test_org_suite_uses_canonical_work_intelligence_repository(self):
+        suite = (ROOT / ".github" / "workflows" / "org-wide-suite.yml").read_text(encoding="utf-8")
+        gate = (ROOT / ".github" / "workflows" / "polyrepo-integration-gate.yml").read_text(encoding="utf-8")
+        contribution = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+        repos = {entry["repo"] for entry in load()["repositories"]}
+
+        self.assertIn("gate-wi-backend:", suite)
+        self.assertIn("target_repo: wi-backend", suite)
+        self.assertIn("repository: Aftergraph/wi-backend", gate)
+        self.assertIn("wi-backend)", gate)
+        self.assertIn("https://github.com/Aftergraph/wi-backend", contribution)
+        self.assertIn("Aftergraph/wi-backend", repos)
+        self.assertNotIn("work-intelligence-v2", suite)
+        self.assertNotIn("work-intelligence-v2", gate)
+        self.assertNotIn("Aftergraph/work-intelligence-v2", contribution)
+        self.assertNotIn("Aftergraph/work-intelligence-v2", repos)
+
     def test_schema_id_required(self):
         doc = load()
         del doc["$id"]
