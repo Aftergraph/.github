@@ -1,0 +1,85 @@
+# Merge steward (reusable): a serial, label-driven merge queue for repos where
+# GitHub's own auto-merge cannot gate anything (private repos on GitHub Free
+# have no branch protection, required checks or merge queue).
+#
+# Engine and tests: scripts/merge-steward/. Onboarding: docs/merge-steward.md.
+# One pass makes at most one mutating step (update one branch, re-run one
+# cancelled run, or merge one PR), so the queue stays strictly serial.
+name: Merge steward (reusable)
+on:
+  workflow_call:
+    inputs:
+      runs_on:
+        description: JSON runner labels for the steward job.
+        type: string
+        default: '["self-hosted","Linux","X64"]'
+      engine_ref:
+        description: Ref of Aftergraph/.github to load the engine from. Pin to the same SHA as the uses line.
+        type: string
+        default: main
+      label:
+        type: string
+        default: automerge
+      hold_labels:
+        type: string
+        default: '["hold","do-not-merge","wip"]'
+      required:
+        description: JSON list of workflow names that must have passed on the head SHA.
+        type: string
+        default: '[]'
+      advisory:
+        description: JSON list of workflow names whose result never blocks a merge.
+        type: string
+        default: '["CodeQL","OpenSSF Scorecard","Auto-merge Dependabot","Merge steward"]'
+      dispatch:
+        description: 'JSON list of post-merge workflow dispatches: [{"workflow":"deploy.yml","paths":["src/**"],"inputs":{}}]'
+        type: string
+        default: '[]'
+      merge_method:
+        type: string
+        default: squash
+      max_reruns:
+        description: How many attempts a cancelled run gets before it counts as failed.
+        type: number
+        default: 2
+      dry_run:
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  steward:
+    runs-on: ${{ fromJSON(inputs.runs_on) }}
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+      checks: read
+    steps:
+      - name: Load engine
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Aftergraph/.github
+          ref: ${{ inputs.engine_ref }}
+          path: .merge-steward
+          persist-credentials: false
+          sparse-checkout: scripts/merge-steward
+      - name: Run one queue pass
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          STEWARD_LABEL: ${{ inputs.label }}
+          STEWARD_HOLD_LABELS: ${{ inputs.hold_labels }}
+          STEWARD_REQUIRED: ${{ inputs.required }}
+          STEWARD_ADVISORY: ${{ inputs.advisory }}
+          STEWARD_DISPATCH: ${{ inputs.dispatch }}
+          STEWARD_MERGE_METHOD: ${{ inputs.merge_method }}
+          STEWARD_MAX_RERUNS: ${{ inputs.max_reruns }}
+          STEWARD_DRY_RUN: ${{ inputs.dry_run }}
+        with:
+          script: |
+            const run = require(`${process.env.GITHUB_WORKSPACE}/.merge-steward/scripts/merge-steward/steward.cjs`);
+            const result = await run({ github, context, core, env: process.env });
+            core.setOutput('action', result.action);
+            core.info(`steward result: ${JSON.stringify(result)}`);
