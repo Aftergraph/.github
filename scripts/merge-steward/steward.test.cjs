@@ -155,3 +155,22 @@ test('helpers: latest run per name wins, push events ignored, globs', () => {
   assert.ok(matchesAny(['wrangler.jsonc'], ['wrangler.jsonc']));
   assert.ok(!matchesAny(['a/wrangler.jsonc'], ['wrangler.jsonc']));
 });
+
+test('action_required is approved, not reported as a failure', () => {
+  const latest = new Map([
+    ['CI', { name: 'CI', status: 'completed', conclusion: 'action_required', id: 1 }],
+    ['PR verify', { name: 'PR verify', status: 'completed', conclusion: 'success', id: 2 }],
+  ]);
+  const v = classify(latest, config({}));
+  assert.equal(v.state, 'approve');
+  assert.deepEqual(v.failed, []);
+  assert.equal(v.approve.length, 1);
+});
+
+test('a real failure still wins over a run awaiting approval', () => {
+  const latest = new Map([
+    ['CI', { name: 'CI', status: 'completed', conclusion: 'failure', id: 1 }],
+    ['PR verify', { name: 'PR verify', status: 'completed', conclusion: 'action_required', id: 2 }],
+  ]);
+  assert.equal(classify(latest, config({})).state, 'fail');
+});

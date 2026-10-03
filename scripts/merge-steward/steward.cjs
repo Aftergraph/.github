@@ -102,15 +102,22 @@ function latestRuns(runs, events) {
 
 /**
  * Classify the head SHA's checks.
- * @returns {{state: 'pass'|'pending'|'fail'|'rerun', pending: string[], failed: string[], rerun: object[], missing: string[]}}
+ * A run that concluded `action_required` never executed: GitHub is waiting for
+ * someone to approve it (this happens to runs triggered by the steward's own
+ * update-branch commit, authored by github-actions[bot]). That is not a
+ * failure, so it is reported separately and approved instead of being noted.
+ * @returns {{state: 'pass'|'pending'|'fail'|'rerun'|'approve', pending: string[], failed: string[], rerun: object[], approve: object[], missing: string[]}}
  */
 function classify(latest, cfg) {
   const pending = [];
   const failed = [];
   const rerun = [];
+  const approve = [];
   for (const [name, run] of latest) {
     if (cfg.advisory.includes(name)) continue;
-    if (run.status !== 'completed') {
+    if (run.status === 'completed' && run.conclusion === 'action_required') {
+      approve.push(run);
+    } else if (run.status !== 'completed') {
       pending.push(name);
     } else if (run.conclusion === 'cancelled' && (run.run_attempt || 1) <= cfg.maxReruns) {
       rerun.push(run);
@@ -121,10 +128,11 @@ function classify(latest, cfg) {
   const missing = cfg.required.filter((name) => !latest.has(name));
   let state = 'pass';
   if (failed.length) state = 'fail';
+  else if (approve.length) state = 'approve';
   else if (rerun.length) state = 'rerun';
   else if (pending.length || missing.length) state = 'pending';
   else if (latest.size === 0) state = 'pending';
-  return { state, pending, failed, rerun, missing };
+  return { state, pending, failed, rerun, approve, missing };
 }
 
 async function alreadyNoted(github, owner, repo, number, tag) {
@@ -200,6 +208,16 @@ async function run({ github, context, core, env = process.env }) {
     if (verdict.state === 'fail') {
       await note(ctx, pr, 'failed', `not merged, these checks failed: ${verdict.failed.join(', ')}.`);
       continue;
+    }
+    if (verdict.state === 'approve') {
+      for (const r of verdict.approve) {
+        log(`#${pr.number} approving "${r.name}", which is waiting for approval and never ran`);
+        if (!cfg.dryRun) {
+          await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/approve', { owner, repo, run_id: r.id });
+        }
+      }
+      result = { action: 'approved', number: pr.number };
+      break;
     }
     if (verdict.state === 'rerun') {
       for (const r of verdict.rerun) {
