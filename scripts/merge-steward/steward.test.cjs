@@ -12,12 +12,24 @@ function wf(name, status, conclusion, extra = {}) {
   return { id: Math.floor(Math.random() * 1e9), name, event: 'pull_request', status, conclusion, created_at: '2026-10-03T20:00:00Z', run_attempt: 1, ...extra };
 }
 
-function fake({ prs, runs = [], behind = 0, mergeable = true, mergeableState = 'clean', children = [], files = [], comments = [] }) {
+function fake({ prs, runs = [], behind = 0, mergeable = true, mergeableState = 'clean', children = [], files = [], comments = [], protection = 404 }) {
   const calls = [];
   const rec = (name) => async (args) => { calls.push([name, args]); return { data: {} }; };
   const github = {
     calls,
     paginate: async (fn, args) => (await fn(args)).data,
+    request: async (route, args) => {
+      calls.push(['request', route, args]);
+      if (route.includes('/protection/required_status_checks')) {
+        if (typeof protection === 'number') {
+          const err = new Error(`HTTP ${protection}`);
+          err.status = protection;
+          throw err;
+        }
+        return { data: protection };
+      }
+      return { data: {} };
+    },
     rest: {
       repos: {
         get: async () => ({ data: { default_branch: 'main' } }),
@@ -90,7 +102,7 @@ test('a failure is commented once per head SHA', async () => {
 });
 
 test('behind base: updates the branch and stops (strict, serial)', async () => {
-  const github = fake({ prs: [pr(1), pr(2)], runs: green, behind: 3 });
+  const github = fake({ prs: [pr(1), pr(2)], runs: green, behind: 3, protection: { strict: true } });
   const res = await run({ github, context, env: {} });
   assert.deepEqual(res, { action: 'updated', number: 1 });
   assert.equal(github.calls.filter(([n]) => n === 'updateBranch').length, 1);
@@ -173,4 +185,55 @@ test('a real failure still wins over a run awaiting approval', () => {
     ['PR verify', { name: 'PR verify', status: 'completed', conclusion: 'action_required', id: 2 }],
   ]);
   assert.equal(classify(latest, config({})).state, 'fail');
+});
+
+const updates = (github) => github.calls.filter(([n]) => n === 'updateBranch').length;
+const merges = (github) => github.calls.filter(([n]) => n === 'merge').length;
+
+test('behind base without strict protection: no bot update commit, the green head merges', async () => {
+  for (const protection of [404, 403, { strict: false }]) {
+    const github = fake({ prs: [pr(1)], runs: green, behind: 3, protection });
+    const res = await run({ github, context, env: {} });
+    assert.equal(updates(github), 0, `no update for protection ${JSON.stringify(protection)}`);
+    assert.equal(res.action, 'merged');
+    assert.equal(merges(github), 1);
+  }
+});
+
+test('behind base without strict protection still waits for a missing required gate', async () => {
+  const github = fake({ prs: [pr(1)], runs: [wf('CI', 'completed', 'success')], behind: 3 });
+  const res = await run({ github, context, env: { STEWARD_REQUIRED: '["CI","Sentinel gate"]' } });
+  assert.deepEqual(res, { action: 'waiting', number: 1 });
+  assert.equal(updates(github), 0);
+  assert.equal(merges(github), 0);
+});
+
+test('an unreadable protection answer falls back to updating, never to a guessed merge', async () => {
+  const github = fake({ prs: [pr(1)], runs: green, behind: 2, protection: 500 });
+  const res = await run({ github, context, env: {} });
+  assert.deepEqual(res, { action: 'updated', number: 1 });
+  assert.equal(merges(github), 0);
+});
+
+test('STEWARD_UPDATE_BRANCH always and never override the protection read', async () => {
+  const always = fake({ prs: [pr(1)], runs: green, behind: 1, protection: 404 });
+  assert.deepEqual(await run({ github: always, context, env: { STEWARD_UPDATE_BRANCH: 'always' } }), { action: 'updated', number: 1 });
+  assert.ok(!always.calls.some(([n, route]) => n === 'request' && String(route).includes('protection')), 'always does not need to read protection');
+
+  const never = fake({ prs: [pr(1)], runs: green, behind: 1, protection: { strict: true } });
+  const res = await run({ github: never, context, env: { STEWARD_UPDATE_BRANCH: 'never' } });
+  assert.equal(updates(never), 0);
+  assert.equal(res.action, 'merged');
+});
+
+test('an unknown STEWARD_UPDATE_BRANCH value falls back to auto', () => {
+  assert.equal(config({ STEWARD_UPDATE_BRANCH: 'sometimes' }).updateBranch, 'auto');
+  assert.equal(config({}).updateBranch, 'auto');
+});
+
+test('protection is read once per pass, not once per behind PR', async () => {
+  const github = fake({ prs: [pr(1), pr(2)], runs: green, behind: 1, mergeableState: 'clean', protection: 404 });
+  await run({ github, context, env: {} });
+  const reads = github.calls.filter(([n, route]) => n === 'request' && String(route).includes('protection')).length;
+  assert.ok(reads <= 1, `read ${reads} times`);
 });

@@ -16,8 +16,13 @@
  *   2. Conflicted or failed PRs are reported once per head SHA and skipped;
  *      they do not block the queue.
  *   3. A PR behind the default branch is updated (merge of base into head) and
- *      the pass stops: its checks must re-run against the current base. This is
- *      the "strict, up to date" guarantee a merge queue would give.
+ *      the pass stops, but only when the base branch actually requires
+ *      up-to-date branches (STEWARD_UPDATE_BRANCH=auto, the default) or the
+ *      caller forces it (always). Otherwise the checks on the head stand and
+ *      the squash merge lands on the current base. Updating is not free: the
+ *      update commit is authored by github-actions[bot], and GitHub fires no
+ *      pull_request_target workflow for it, so a required gate that runs on
+ *      pull_request_target (Sentinel) never reports and the PR waits forever.
  *   4. A cancelled run on the head SHA is re-run (bounded by maxReruns); the
  *      pass stops while it runs.
  *   5. A green, up-to-date PR is merged with the head SHA pinned. Stacked
@@ -57,7 +62,32 @@ function config(env) {
     dryRun: String(env.STEWARD_DRY_RUN || 'false') === 'true',
     maxReruns: Number.parseInt(env.STEWARD_MAX_RERUNS || '2', 10),
     events: list(env.STEWARD_EVENTS, ['pull_request', 'pull_request_target']),
+    updateBranch: UPDATE_MODES.has(env.STEWARD_UPDATE_BRANCH) ? env.STEWARD_UPDATE_BRANCH : 'auto',
   };
+}
+
+const UPDATE_MODES = new Set(['auto', 'always', 'never']);
+
+/**
+ * Does the base branch require PRs to be up to date before merging?
+ *
+ * No protection (404) or no permission to read it (403, which is what a
+ * private repository on GitHub Free returns) means nothing requires it. Any
+ * other error is treated as "required": an unexpected answer falls back to the
+ * stricter behaviour rather than merging on a guess.
+ */
+async function strictRequired({ github, owner, repo, log }, branch) {
+  try {
+    const { data } = await github.request(
+      'GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks',
+      { owner, repo, branch },
+    );
+    return Boolean(data && data.strict);
+  } catch (err) {
+    if (err && (err.status === 404 || err.status === 403)) return false;
+    log(`could not read protection for ${branch} (${err && err.message}); treating up-to-date as required`);
+    return true;
+  }
 }
 
 /** Minimal glob: `**` spans directories, `*` stays within one segment. */
@@ -176,6 +206,7 @@ async function run({ github, context, core, env = process.env }) {
   log(`queue (${cfg.label}) on ${owner}/${repo}@${base}: ${queue.map((p) => `#${p.number}`).join(', ') || 'empty'}${cfg.dryRun ? ' [dry run]' : ''}`);
 
   let result = { action: 'idle' };
+  let strict;
   for (const item of queue) {
     const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: item.number });
     if (pr.state !== 'open' || pr.draft) continue;
@@ -192,12 +223,19 @@ async function run({ github, context, core, env = process.env }) {
       owner, repo, basehead: `${base}...${pr.head.sha}`,
     });
     if (cmp.behind_by > 0) {
-      log(`#${pr.number} is ${cmp.behind_by} behind ${base}: updating branch so checks run on the current base`);
-      if (!cfg.dryRun) {
-        await github.rest.pulls.updateBranch({ owner, repo, pull_number: pr.number, expected_head_sha: pr.head.sha });
+      if (strict === undefined) {
+        strict = cfg.updateBranch === 'always'
+          || (cfg.updateBranch === 'auto' && await strictRequired(ctx, base));
       }
-      result = { action: 'updated', number: pr.number };
-      break;
+      if (strict) {
+        log(`#${pr.number} is ${cmp.behind_by} behind ${base}: updating branch so checks run on the current base`);
+        if (!cfg.dryRun) {
+          await github.rest.pulls.updateBranch({ owner, repo, pull_number: pr.number, expected_head_sha: pr.head.sha });
+        }
+        result = { action: 'updated', number: pr.number };
+        break;
+      }
+      log(`#${pr.number} is ${cmp.behind_by} behind ${base}; up to date is not required here, so the checks on the head stand (no bot update commit)`);
     }
 
     const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
@@ -307,6 +345,7 @@ async function run({ github, context, core, env = process.env }) {
 module.exports = run;
 module.exports.run = run;
 module.exports.config = config;
+module.exports.strictRequired = strictRequired;
 module.exports.classify = classify;
 module.exports.latestRuns = latestRuns;
 module.exports.globToRegExp = globToRegExp;

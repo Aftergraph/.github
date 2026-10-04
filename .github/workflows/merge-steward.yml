@@ -42,6 +42,10 @@ on:
         description: How many attempts a cancelled run gets before it counts as failed.
         type: number
         default: 2
+      update_branch:
+        description: "When a PR is behind: auto (update only if the base requires up-to-date branches), always, or never. A bot update commit does not fire pull_request_target gates."
+        type: string
+        default: auto
       dry_run:
         type: boolean
         default: false
@@ -77,6 +81,7 @@ jobs:
           STEWARD_MERGE_METHOD: ${{ inputs.merge_method }}
           STEWARD_MAX_RERUNS: ${{ inputs.max_reruns }}
           STEWARD_DRY_RUN: ${{ inputs.dry_run }}
+          STEWARD_UPDATE_BRANCH: ${{ inputs.update_branch }}
         with:
           script: |
             const run = require(`${process.env.GITHUB_WORKSPACE}/.merge-steward/scripts/merge-steward/steward.cjs`);
