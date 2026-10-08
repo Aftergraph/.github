@@ -45,6 +45,8 @@ EXPECTED_PINNED_CHECKS = {
     "runtime": ["build-test"],
     "model-registry": ["validate"],
     ".github": ["selftest (agent_review unit tests)"],
+    "Lume": ["Verification gate", "Build", "Architecture ratchet",
+             "required / merge gate", "qualify"],
     "autonomous-venture-company": [],
 }
 
@@ -245,6 +247,19 @@ class C2PinnedChecksTest(unittest.TestCase):
         agent = doc["agent_review"]
         self.assertEqual(agent["verdict"], "BLOCKED")
         self.assertIn("PINNED_CHECK_MISSING", agent["reason_codes"])
+
+
+    def test_lume_requires_real_named_checks_and_fail_closed_on_missing(self):
+        packet = load_fixture()
+        packet["repo"] = "Lume"
+        names = load_policy()["checks"]["Lume"]
+        self.assertEqual(len(names), 5)
+        rc, out, err = run_agent_v1(packet, packet["head_sha"], green_checks(names))
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(json.loads(out)["agent_review"]["verdict"], "MERGEABLE")
+        rc, out, err = run_agent_v1(packet, packet["head_sha"], green_checks(names[:-1]))
+        self.assertEqual(rc, 0, err)
+        self.assertIn("PINNED_CHECK_MISSING", json.loads(out)["agent_review"]["reason_codes"])
 
 
 class SchemaCompatTest(unittest.TestCase):
