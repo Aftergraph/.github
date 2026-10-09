@@ -18,8 +18,15 @@ The steward is therefore the gate itself, run from Actions on our own runners.
    none of `hold`, `do-not-merge`, `wip`. Forks are never merged. Oldest first.
 2. Skips a conflicted or failed PR with one comment per head SHA. It does not
    block the queue.
-3. Updates a PR that is behind the default branch and stops, so every merge is
-   tested against the current base.
+3. When a PR is behind the default branch, updates it and stops only if the
+   base requires up-to-date branches (`update_branch: auto`, the default) or
+   the caller sets `update_branch: always`. Otherwise the checks on the head
+   stand and the squash merge lands on the current base. The update commit is
+   authored by `github-actions[bot]`, and GitHub fires no
+   `pull_request_target` workflow for it, so a required gate on that event
+   (Sentinel) would never report and the PR would wait forever. On GitHub Free
+   private repos the protection read returns 403, which counts as "not
+   required". Any other unreadable answer falls back to updating.
 4. Re-runs a cancelled workflow run (up to `max_reruns` attempts) and stops.
 5. Merges a green, up-to-date PR with the head SHA pinned. Stacked PRs based on
    its branch are retargeted to the default branch first, so deleting the
@@ -78,7 +85,8 @@ Then create the `automerge` label and put it on a PR. Start with
 
 - Never merges a draft, a fork, a held PR, or a PR whose head moved after
   evaluation (the merge call pins the head SHA).
-- Never merges a PR that is behind the base branch.
+- Never merges a PR that is behind the base branch when the base requires
+  up-to-date branches, or when `update_branch: always` is set.
 - Never merges on a failed, missing or running required check.
 - Never touches workflow code from the PR: it does not check out PR code.
 - One mutating step per pass, serialized by the caller's concurrency group.
