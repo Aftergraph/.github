@@ -2,7 +2,7 @@
   "$id": "contract:polyrepo-heads/1.0",
   "title": "Aftergraph Polyrepo Exact-Head Manifest",
   "description": "Pinned main heads and cross-repository dependency refs used by selective gates. This is a timestamped snapshot, not a claim that remote main remains unchanged after capture.",
-  "captured_at": "2026-09-06T11:55:57Z",
+  "captured_at": "2026-10-01T09:51:13Z",
   "owner": "Aftergraph",
   "branch": "main",
   "manifest_repository": "Aftergraph/.github",
@@ -11,23 +11,23 @@
     {
       "repo": "Aftergraph/trust-gateway",
       "role": "security-enforcement",
-      "sha": "d50d5d424fe125500af9cbdfe0352e3a8adeec8a",
+      "sha": "2742a9a656070ca2e294a98185e2424dec1e007c",
       "dependencies": []
     },
     {
       "repo": "Aftergraph/works-execution",
       "role": "execution-control-plane",
-      "sha": "06f1837f0d8644126fa3e2e13d1916c3f971d4bf",
+      "sha": "0298443864bbb2ec6b33e5806b805fecf902956f",
       "dependencies": []
     },
     {
       "repo": "Aftergraph/aie",
       "role": "interoperability-verification",
-      "sha": "5c0adf20579e7de780c0331aa869ebe628b1bbed",
+      "sha": "9b83fbde3d332450f6ddd851263ffdc3117d0b51",
       "dependencies": [
         {
           "repo": "Aftergraph/after-graph-governance",
-          "sha": "1deb274cf716f4568b9e4d1af2b4d39e5de07486",
+          "sha": "7b963c880c4ccc886d4f06eb80eaf483dee848b4",
           "path": ".ci-dependencies/after-graph-governance",
           "reason": "frozen governance contracts"
         }
@@ -36,19 +36,19 @@
     {
       "repo": "Aftergraph/intelligence-systems-research",
       "role": "research-conformance",
-      "sha": "f5de043c5053d737c04bfd07c909c92353ead03e",
+      "sha": "06d906bcab0159527e76fc866bb7c74ac294f32f",
       "dependencies": []
     },
     {
-      "repo": "Aftergraph/work-intelligence-v2",
+      "repo": "Aftergraph/wi-backend",
       "role": "operational-intelligence",
-      "sha": "1a3901ae4b9c5e9f071f5d775ba4cb86f905bf3d",
+      "sha": "76668fd982c4e4afa9ecef9ace5297cf9a7beead",
       "dependencies": []
     },
     {
       "repo": "Aftergraph/after-graph-governance",
       "role": "canonical-contracts",
-      "sha": "1deb274cf716f4568b9e4d1af2b4d39e5de07486",
+      "sha": "7b963c880c4ccc886d4f06eb80eaf483dee848b4",
       "dependencies": []
     }
   ]
