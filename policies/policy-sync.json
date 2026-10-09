@@ -1,0 +1,26 @@
+{
+  "$id": "policy-sync/0.1",
+  "description": "Declarative mapping of org-level policy files to per-repo targets. The sync workflow applies the named template to each listed repo (creating or overwriting the file) and opens a drift PR when the content differs. A repo in the 'skip' set for a file is never touched, preserving legitimate bespoke content. LICENSE defaults to Apache-2.0 for every repo not listed in overrides or skip; SECURITY.md is opt-in per template.",
+  "license": {
+    "default": "templates/LICENSE-Apache-2.0",
+    "overrides": {
+      "aftergraph-cron-fabric": "templates/LICENSE-MIT"
+    },
+    "skip": []
+  },
+  "security": {
+    "templates": {
+      "hard": "templates/SECURITY-hard.md",
+      "public": "templates/SECURITY-public.md",
+      "research": "templates/SECURITY-research.md",
+      "continuity": "templates/SECURITY-continuity.md"
+    },
+    "assignments": {
+      "hard": ["after-graph-governance", "trust-gateway", "runtime", "works-execution", "sentinel"],
+      "public": ["aftergraph.org", "brand", "docs", "studio"],
+      "research": ["afm", "intelligence-systems-research", "llm-research-development", "model-registry"],
+      "continuity": ["context-continuity", "continuum", "skills-vault"]
+    },
+    "skip": ["aie", "autonomous-venture-company", "wi-backend", "skill-abi", "relay", "sentinel-firetest", "aftergraph-cron-fabric", ".github"]
+  }
+}

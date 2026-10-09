@@ -1,0 +1,123 @@
+name: Regenerate repository agent guides
+
+# Regenerate every repo-level AGENTS.md from the canonical platform topology and
+# a live probe of each repo's default branch, then open one drift PR per changed
+# repo. Removes the stale-SHA provenance drift the generator was built to fix but
+# that was only ever run by hand.
+#
+# Trigger model (mirrors org-wide-suite.yml): scheduled + manual, not per-push.
+# The generator is deterministic for a given HEAD, so a daily run is enough to
+# catch drift introduced by merges during the day.
+#
+# Inputs:
+#   repo_filter  optional comma/space list to limit which repos are regenerated.
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily 06:00 UTC = 08:00 CEST
+  workflow_dispatch:
+    inputs:
+      repo_filter:
+        description: "Optional comma/space-separated repo names to limit regeneration"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.repos.outputs.matrix }}
+    steps:
+      - name: Checkout governance (topology only)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          repository: Aftergraph/after-graph-governance
+          path: after-graph-governance
+
+      - name: Resolve the selected repo list
+        id: repos
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          topo = json.load(open('after-graph-governance/docs/platform-topology/2.0.json'))
+          names = sorted(r['name'] for r in topo['repositories'])
+          filt = os.environ.get('REPO_FILTER', '').replace(',', ' ').split()
+          sel = [n for n in names if not filt or n in filt]
+          print(f"selected={len(sel)}/{len(names)}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"matrix={json.dumps({'include': [{'repo': n} for n in sel]})}\n")
+          PY
+        env:
+          GITHUB_OUTPUT: ${{ github.output }}
+          REPO_FILTER: ${{ github.event.inputs.repo_filter }}
+
+  regenerate:
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix: ${{ fromJson(needs.resolve.outputs.matrix) }}
+    steps:
+      - name: Guard — require GUIDES_PAT for cross-repo PRs
+        id: guard
+        env:
+          PAT_PRESENT: ${{ secrets.guides_pat != '' }}
+        run: |
+          if [ "$PAT_PRESENT" != "true" ]; then
+            echo "::warning::GUIDES_PAT is not configured — guide drift will be reported but no PRs opened. Set the org secret to enable."
+            echo "skip_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout governance (scripts + topology)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          repository: Aftergraph/after-graph-governance
+          path: after-graph-governance
+
+      - name: Checkout target repo as a sibling
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          repository: Aftergraph/${{ matrix.repo }}
+          path: ${{ matrix.repo }}
+
+      - name: Set workspace contract env
+        run: |
+          echo "AFTERGRAPH_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Build workspace inventories
+        run: |
+          python3 after-graph-governance/scripts/inventory_repos.py --root "$AFTERGRAPH_ROOT"
+
+      - name: Regenerate this repo's agent guide
+        run: |
+          python3 after-graph-governance/scripts/gen_repo_guides.py --root "$AFTERGRAPH_ROOT" --force --only ${{ matrix.repo }}
+
+      - name: Open a drift PR if the guide changed
+        if: steps.guard.outputs.skip_pr != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.guides_pat }}
+        run: |
+          set -euo pipefail
+          BRANCH="vibe/agents-guide-sync"
+          if git -C "${{ matrix.repo }}" diff --quiet -- AGENTS.md 2>/dev/null; then
+            echo "no drift in ${{ matrix.repo }}"
+            exit 0
+          fi
+          echo "::notice::drift detected in ${{ matrix.repo }}"
+          cd "${{ matrix.repo }}"
+          git switch -C "$BRANCH"
+          git add AGENTS.md
+          git -c user.name='aftergraph-ci' -c user.email='ci@aftergraph' commit -m "chore(agents): regenerate AGENTS.md from topology + live probe"
+          git push --force-with-lease origin "$BRANCH"
+          gh pr create --repo "Aftergraph/${{ matrix.repo }}" --head "$BRANCH" \
+            --title "chore(agents): regenerate AGENTS.md" \
+            --body "Automated regeneration from the platform topology and a live probe of the default branch. Keeps the provenance SHA fresh and the role/description aligned with \`after-graph-governance/docs/platform-topology/2.0.json\`. The Ratchet section is preserved by the generator." \
+            || gh pr edit --repo "Aftergraph/${{ matrix.repo }}"
