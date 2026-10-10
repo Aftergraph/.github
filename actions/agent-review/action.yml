@@ -256,3 +256,4 @@ runs:
         name: agent-review-packet
         path: ${{ inputs.emit-dir }}/*.json
         if-no-files-found: error
+        retention-days: 1
