@@ -250,10 +250,68 @@ runs:
           --agent-version "${{ inputs.agent-version }}" \
           --run-id "${{ github.run_id }}"
 
+    # The packet file is the review evidence. Its presence stays fail-closed:
+    # a run that produced no packet is a broken review and must fail here.
+    - name: Verify packet file was emitted
+      shell: bash
+      env:
+        EMIT_DIR: ${{ inputs.emit-dir }}
+      run: |
+        set -euo pipefail
+        shopt -s nullglob
+        packets=("$EMIT_DIR"/*.json)
+        if [ "${#packets[@]}" -eq 0 ]; then
+          echo "::error::agent review emitted no packet file in $EMIT_DIR"
+          exit 1
+        fi
+
+    # The same evidence also lands in the job summary, so it survives even
+    # when artifact storage is unavailable.
+    - name: Record packet in job summary
+      shell: bash
+      env:
+        EMIT_DIR: ${{ inputs.emit-dir }}
+      run: |
+        set -euo pipefail
+        python3 - "$EMIT_DIR" >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+        import json, pathlib, sys
+        for path in sorted(pathlib.Path(sys.argv[1]).glob("*.json")):
+            doc = json.loads(path.read_text(encoding="utf-8"))
+            agent = doc.get("agent_review") or {}
+            print(f"## Sentinel review packet `{path.name}`")
+            print()
+            print(f"- verdict: `{agent.get('verdict', 'UNKNOWN')}`")
+            print(f"- reason codes: `{', '.join(agent.get('reason_codes') or []) or 'none'}`")
+            print(f"- head: `{doc.get('head_sha', '')}`")
+            print()
+            print("<details><summary>packet JSON</summary>")
+            print()
+            print("```json")
+            print(json.dumps(doc, indent=2, sort_keys=True))
+            print("```")
+            print()
+            print("</details>")
+        EOF
+
+    # Artifact storage is an organisation-wide quota. When it is full the
+    # upload fails ("Artifact storage quota has been hit") even though the
+    # review itself completed, which turned every caller's required
+    # "sentinel-gate / review (read-only)" check red. The upload is a
+    # convenience copy of evidence already in the job summary, so its failure
+    # is reported as a warning and does not change the review outcome.
     - name: Upload packet file artifact
+      id: upload-packet
+      continue-on-error: true
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: agent-review-packet
         path: ${{ inputs.emit-dir }}/*.json
         if-no-files-found: error
         retention-days: 1
+
+    - name: Report skipped artifact upload
+      if: steps.upload-packet.outcome == 'failure'
+      shell: bash
+      run: |
+        echo "::warning::agent-review-packet artifact upload failed (likely artifact storage quota); the packet is recorded in the job summary instead."
+        echo "> agent-review-packet artifact upload failed; the packet above is the evidence of record for this run." >> "$GITHUB_STEP_SUMMARY"
