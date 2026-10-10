@@ -47,13 +47,26 @@ class RunnerFabricDoctorTests(unittest.TestCase):
         )
         return env
 
+    HEALTHY_DF = '#!/usr/bin/env bash\nset -euo pipefail\nif [[ "$1" == "-Pk" ]]; then\n  printf \'Filesystem 1024-blocks Used Available Capacity Mounted on\\n\'\n  printf \'tmpfs 100000 10000 90000 10%% %s\\n\' "$2"\nelse\n  printf \'Filesystem Inodes IUsed IFree IUse%% Mounted on\\n\'\n  printf \'tmpfs 100000 1 99999 1%% %s\\n\' "$2"\nfi\n'
+
+    def _healthy_df(self, bin_dir: Path) -> None:
+        """Fake df reporting a healthy tmpfs, so the test does not depend on
+        the real /tmp of whichever runner executes it."""
+        bin_dir.mkdir(exist_ok=True)
+        fake_df = bin_dir / "df"
+        fake_df.write_text(self.HEALTHY_DF, encoding="utf-8")
+        fake_df.chmod(0o755)
+
     def test_service_status_runs_from_runner_root_and_tmpfs_is_healthy(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             fabric_root = temp_path / "fabric"
             self._write_runner(fabric_root)
 
+            bin_dir = temp_path / "bin"
+            self._healthy_df(bin_dir)
             env = self._base_env(fabric_root, temp_path)
+            env["PATH"] = f"{bin_dir}:{env['PATH']}"
             result = subprocess.run(
                 ["bash", str(DOCTOR)],
                 cwd=temp_path,
@@ -124,6 +137,7 @@ class RunnerFabricDoctorTests(unittest.TestCase):
                 encoding="utf-8",
             )
             gh.chmod(0o755)
+            self._healthy_df(bin_dir)
 
             env = self._base_env(fabric_root, temp_path)
             env.update(
