@@ -250,7 +250,13 @@ runs:
           --agent-version "${{ inputs.agent-version }}" \
           --run-id "${{ github.run_id }}"
 
-    - name: Upload packet file artifact
+    # Best-effort only. The packet is already in the job log (stdout plus the
+    # emit step). When the org Actions storage quota is exhausted this upload
+    # fails with "Artifact storage quota has been hit" (Lume #1618, #1679,
+    # #1686); a storage-accounting failure must never fail the read-only
+    # review gate itself, so the step warns and the job stays green.
+    - name: Upload packet file artifact (best-effort)
+      continue-on-error: true
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: agent-review-packet
