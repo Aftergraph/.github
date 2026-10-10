@@ -10,7 +10,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "agent-review.yml"
 
 
 class AgentReviewEnginePinTests(unittest.TestCase):
-    EXPECTED_ENGINE_SHA = "ed684c6abbac9c8695234dd728faef9f3d353dca"
+    EXPECTED_ENGINE_SHA = "fa1cfb039b048a27ef6dc99a9bf1cf23a07bf8a5"
 
     def test_engine_checkouts_pin_current_reviewed_engine(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
