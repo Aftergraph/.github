@@ -48,6 +48,7 @@ EXPECTED_PINNED_CHECKS = {
     "Lume": ["Verification gate", "Build", "Architecture ratchet",
              "required / merge gate", "qualify"],
     "autonomous-venture-company": [],
+    "tilsyn": ["gate", "e2e"],
 }
 
 OVERRIDE_LABEL = "OWNER_OVERRIDE_ACCEPT_RISK"
