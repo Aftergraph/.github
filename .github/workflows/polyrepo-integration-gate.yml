@@ -26,7 +26,7 @@ on:
         required: false
         type: string
         default: 'main'
-      wiv2_ref:
+      wi_backend_ref:
         required: false
         type: string
         default: 'main'
@@ -99,13 +99,13 @@ jobs:
           persist-credentials: false
           clean: true
 
-      - name: Checkout work-intelligence-v2
-        if: contains(inputs.siblings, 'work-intelligence-v2')
+      - name: Checkout Wie backend
+        if: contains(inputs.siblings, 'wi-backend')
         uses: actions/checkout@v7
         with:
-          repository: Aftergraph/work-intelligence-v2
-          ref: ${{ inputs.wiv2_ref }}
-          path: work-intelligence-v2
+          repository: Aftergraph/wi-backend
+          ref: ${{ inputs.wi_backend_ref }}
+          path: wi-backend
           persist-credentials: false
           clean: true
 
@@ -126,7 +126,7 @@ jobs:
           node-version: '24'
 
       - name: Provision Python 3.12
-        if: inputs.target_repo == 'aie' || inputs.target_repo == 'work-intelligence-v2' || inputs.target_repo == 'intelligence-systems-research'
+        if: inputs.target_repo == 'aie' || inputs.target_repo == 'wi-backend' || inputs.target_repo == 'intelligence-systems-research'
         uses: actions/setup-python@v7
         with:
           python-version: '3.12'
@@ -150,7 +150,7 @@ jobs:
           echo "AIE_ROOT=$GITHUB_WORKSPACE/aie" >> "$GITHUB_ENV"
           echo "WORKS_ROOT=$GITHUB_WORKSPACE/works-execution" >> "$GITHUB_ENV"
           echo "TG_ROOT=$GITHUB_WORKSPACE/trust-gateway" >> "$GITHUB_ENV"
-          echo "WIV2_ROOT=$GITHUB_WORKSPACE/work-intelligence-v2" >> "$GITHUB_ENV"
+          echo "WI_BACKEND_ROOT=$GITHUB_WORKSPACE/wi-backend" >> "$GITHUB_ENV"
           echo "ISR_ROOT=$GITHUB_WORKSPACE/intelligence-systems-research" >> "$GITHUB_ENV"
 
       - name: Assert governance contracts present
@@ -187,7 +187,7 @@ jobs:
               python -m compileall -q src interop/s1
               python -m pytest -q
               ;;
-            work-intelligence-v2)
+            wi-backend)
               python -m pip install -e ".[dev]"
               python -m pip install ruff
               ruff check src/ tests/
@@ -225,7 +225,7 @@ jobs:
           EXACT_HEAD="$(git -C "$GITHUB_WORKSPACE/$TARGET_REPO" rev-parse HEAD)"
           printf 'EXACT_HEAD=%s\n' "$EXACT_HEAD"
           printf 'TARGET_REPO=%s\n' "$TARGET_REPO"
-          for repo in after-graph-governance aie works-execution work-intelligence-v2 intelligence-systems-research; do
+          for repo in after-graph-governance aie works-execution wi-backend intelligence-systems-research; do
             if [ -d "$GITHUB_WORKSPACE/$repo/.git" ]; then
               printf '%s=%s\n' "$(echo "$repo" | tr '[:lower:]-' '[:upper:]_')" "$(git -C "$GITHUB_WORKSPACE/$repo" rev-parse HEAD)"
             fi

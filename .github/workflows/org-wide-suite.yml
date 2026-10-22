@@ -38,10 +38,10 @@ jobs:
       target_repo: aie
       siblings: "after-graph-governance"
 
-  gate-work-intelligence-v2:
+  gate-wi-backend:
     uses: ./.github/workflows/polyrepo-integration-gate.yml
     with:
-      target_repo: work-intelligence-v2
+      target_repo: wi-backend
       siblings: "after-graph-governance"
 
   gate-intelligence-systems-research:

@@ -20,7 +20,7 @@ https://github.com/Aftergraph/.github/blob/main/RFC-PROCESS.md
 - **Intelligence Systems Research:** https://github.com/Aftergraph/intelligence-systems-research
 - **Trust Gateway:** https://github.com/Aftergraph/trust-gateway
 - **WORKS execution:** https://github.com/Aftergraph/works-execution
-- **Work Intelligence:** https://github.com/Aftergraph/work-intelligence-v2
+- **Work Intelligence:** https://github.com/Aftergraph/wi-backend
 - **Cross-repo governance:** https://github.com/Aftergraph/after-graph-governance
 - **Sentinel:** https://github.com/Aftergraph/sentinel
 - **Public site:** https://github.com/Aftergraph/aftergraph.org
