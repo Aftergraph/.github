@@ -1,0 +1,130 @@
+name: Sync org policy files
+
+# Apply the declarative policy-sync manifest (policies/policy-sync.json) across the
+# polyrepo and open one drift PR per changed repo. Keeps LICENSE and class-based
+# SECURITY.md aligned with canonical templates in policies/templates/ while
+# preserving bespoke content listed in the manifest's skip sets.
+#
+# Trigger model (mirrors regenerate-agents-guides.yml): scheduled + manual.
+# The manifest is the source of truth; the workflow only enforces it.
+
+on:
+  schedule:
+    - cron: "30 6 * * *" # daily 06:30 UTC = 08:30 CEST (offset from the guide regen at 06:00)
+  workflow_dispatch:
+    inputs:
+      repo_filter:
+        description: "Optional comma/space-separated repo names to limit the sync"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.repos.outputs.matrix }}
+    steps:
+      - name: Checkout this repo (manifest + topology path)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+
+      - name: Checkout governance (topology only)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          repository: Aftergraph/after-graph-governance
+          path: after-graph-governance
+
+      - name: Resolve the selected repo list
+        id: repos
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          topo = json.load(open('after-graph-governance/docs/platform-topology/2.0.json'))
+          names = sorted(r['name'] for r in topo['repositories'])
+          filt = os.environ.get('REPO_FILTER', '').replace(',', ' ').split()
+          sel = [n for n in names if not filt or n in filt]
+          print(f"selected={len(sel)}/{len(names)}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"matrix={json.dumps({'include': [{'repo': n} for n in sel]})}\n")
+          PY
+        env:
+          GITHUB_OUTPUT: ${{ github.output }}
+          REPO_FILTER: ${{ github.event.inputs.repo_filter }}
+
+  sync:
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix: ${{ fromJson(needs.resolve.outputs.matrix) }}
+    steps:
+      - name: Guard — require GUIDES_PAT for cross-repo PRs
+        id: guard
+        env:
+          PAT_PRESENT: ${{ secrets.guides_pat != '' }}
+        run: |
+          if [ "$PAT_PRESENT" != "true" ]; then
+            echo "::warning::GUIDES_PAT is not configured — policy drift will be reported but no PRs opened. Set the org secret to enable."
+            echo "skip_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout this repo (manifest + templates + sync script)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          path: org
+
+      - name: Checkout governance (topology)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          repository: Aftergraph/after-graph-governance
+          path: after-graph-governance
+
+      - name: Checkout target repo as a sibling
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677263 # v4
+        with:
+          repository: Aftergraph/${{ matrix.repo }}
+          path: ${{ matrix.repo }}
+
+      - name: Apply policy templates for this repo
+        id: apply
+        run: |
+          set -euo pipefail
+          # The syncer expects repos as siblings under a root. Put the target repo
+          # next to the org repo so the script sees repo/<name> and the manifest
+          # resolves templates relative to itself.
+          WS="$GITHUB_WORKSPACE"
+          OUT=$(python3 org/scripts/sync_policies.py \
+            --root "$WS" \
+            --manifest org/policies/policy-sync.json \
+            --topology after-graph-governance/docs/platform-topology/2.0.json \
+            --apply --repo "${{ matrix.repo }}" 2>&1)
+          echo "$OUT"
+          if echo "$OUT" | grep -q "drifted=0"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open a drift PR if files changed
+        if: steps.apply.outputs.changed == 'true' && steps.guard.outputs.skip_pr != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.guides_pat }}
+        run: |
+          set -euo pipefail
+          BRANCH="vibe/policy-sync"
+          cd "${{ matrix.repo }}"
+          git switch -C "$BRANCH"
+          git add -A
+          git -c user.name='aftergraph-ci' -c user.email='ci@aftergraph' commit -m "chore(policy): sync LICENSE/SECURITY from org templates"
+          git push --force-with-lease origin "$BRANCH"
+          gh pr create --repo "Aftergraph/${{ matrix.repo }}" --head "$BRANCH" \
+            --title "chore(policy): sync org policy files" \
+            --body "Automated sync from \`Aftergraph/.github/policies/policy-sync.json\`. Applies the canonical LICENSE and the class-based SECURITY.md template declared for this repository in the manifest. Bespoke content listed in the manifest skip set is never touched." \
+            || gh pr edit --repo "Aftergraph/${{ matrix.repo }}"
