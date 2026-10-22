@@ -48,6 +48,10 @@
       "Architecture ratchet",
       "required / merge gate",
       "qualify"
+    ],
+    "tilsyn": [
+      "gate",
+      "e2e"
     ]
   }
 }
