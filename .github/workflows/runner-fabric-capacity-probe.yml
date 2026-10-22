@@ -1,0 +1,49 @@
+name: Runner Fabric Capacity Probe
+
+# Read-only lane proof. No checkout, repository mutation, secret, or provider call.
+# The workflow intentionally runs on the exact organization-visible selector
+# required by the Runner Fabric policy.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/runner-fabric-capacity-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runner-fabric-capacity-probe-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  capacity:
+    name: organization-visible-aftergraph-ci
+    runs-on: [self-hosted, Linux, X64, aftergraph-ci]
+    timeout-minutes: 5
+    steps:
+      - name: Verify runner lane
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test "${RUNNER_OS:-}" = "Linux"
+          test "${RUNNER_ARCH:-}" = "X64"
+          test -n "${RUNNER_NAME:-}"
+          case "${RUNNER_NAME}" in
+            aftergraph-ci-*) ;;
+            *)
+              echo "runner name does not match the governed aftergraph-ci prefix" >&2
+              exit 1
+              ;;
+          esac
+
+          # Persistent runners must not grant jobs root authority.
+          test "$(id -u)" -ne 0
+
+          echo "RUNNER_FABRIC_JOB=PASS"
+          echo "RUNNER_FABRIC_OS=Linux"
+          echo "RUNNER_FABRIC_ARCH=X64"
+          echo "RUNNER_FABRIC_NAME_PREFIX=aftergraph-ci"
+          echo "RUNNER_FABRIC_ROOTLESS=true"
