@@ -12,9 +12,11 @@ Implements:
      POLICY_UNKNOWN_REPO. Repos with an explicitly empty pin list (no CI,
      currently autonomous-venture-company) fail closed with NO_CI_PROTECTION
      unless the OWNER_OVERRIDE_ACCEPT_RISK label is present in the binding input.
-  C3 approval/binding (--binding JSON, optional): push-after-review
-     invalidates verdict (an APPROVED review submitted before the head commit
-     was pushed => PUSH_AFTER_REVIEW); unresolved review conversations =>
+  C3 approval/binding (--binding JSON, optional): the absence of a
+     post-push APPROVED review invalidates the verdict (PUSH_AFTER_REVIEW).
+     Superseded earlier approvals do not veto later valid approvals.
+     Malformed timestamps fail closed (REVIEW_BINDING_UNKNOWN).
+     Unresolved review conversations =>
      UNRESOLVED_CONVERSATIONS; CODEOWNERS not matched while an independent
      code owner is possible => CODEOWNERS_UNMATCHED. When every matching
      CODEOWNERS principal is the PR author, the collector records that an
@@ -157,11 +159,15 @@ def check_binding(binding):
     pushed_at = parse_time(binding.get("head_commit_pushed_at"))
     if pushed_at is None:
         return reasons + ["REVIEW_BINDING_UNKNOWN"]
-    for review in approvals:
-        submitted_at = parse_time(review.get("submitted_at"))
-        if submitted_at is None or submitted_at < pushed_at:
-            reasons.append("PUSH_AFTER_REVIEW")
-            break
+    # Historical approvals on superseded heads cannot veto a subsequent
+    # independently reviewed head. Require at least one post-push approval,
+    # while keeping unknown approval timestamps fail-closed.
+    approval_times = [parse_time(review.get("submitted_at"))
+                      for review in approvals]
+    if any(submitted_at is None for submitted_at in approval_times):
+        reasons.append("REVIEW_BINDING_UNKNOWN")
+    elif not any(submitted_at >= pushed_at for submitted_at in approval_times):
+        reasons.append("PUSH_AFTER_REVIEW")
     return reasons
 
 
